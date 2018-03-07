@@ -20,6 +20,7 @@
 #endif
 
 @interface AppDelegate () <UNUserNotificationCenterDelegate>
+@property (strong, nonatomic) FIRDatabaseReference *ref;
 
 @end
 
@@ -38,6 +39,10 @@
     // [START set_messaging_delegate]
     [FIRMessaging messaging].delegate = self;
     // [END set_messaging_delegate]
+    
+    
+    self.ref = [[FIRDatabase database] reference];
+
     
     if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_9_x_Max) {
         UIUserNotificationType allNotificationTypes =
@@ -113,6 +118,18 @@
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    
+    NSDictionary *userInactive = @{UserActive:Inactive};
+    [[[_ref child:UserCollection] child:[FIRAuth auth].currentUser.uid]
+     updateChildValues:userInactive withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+         if (error) {
+             NSLog(@"error with adding document %@",error);
+         }else{
+             NSLog(@"update user status");
+         }
+         
+     }];
+    
 }
 
 
@@ -123,6 +140,17 @@
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    
+    NSDictionary *userActive = @{UserActive:Active};
+    [[[_ref child:UserCollection] child:[FIRAuth auth].currentUser.uid]
+     updateChildValues:userActive withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+         if (error) {
+             NSLog(@"error with adding document %@",error);
+         }else{
+             NSLog(@"update user status success");
+         }
+         
+     }];
 }
 
 

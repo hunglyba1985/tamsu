@@ -14,11 +14,18 @@
 #define AuthVerificationID  @"authVerificationID"
 #define UserName @"userName"
 #define UserPhone @"userPhone"
+#define UserActive @"userActive"
 
 
 
 // Collection
 #define UserCollection @"users"
+
+
+// Bool value
+#define Active @"yes"
+#define Inactive @"no"
+
 
 
 #endif /* Define_h */

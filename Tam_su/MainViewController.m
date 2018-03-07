@@ -36,11 +36,11 @@
                                };
     
     [[[_ref child:UserCollection] child:[FIRAuth auth].currentUser.uid]
-     setValue:userInfo withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+     updateChildValues:userInfo withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
          if (error) {
              NSLog(@"error with adding document %@",error);
          }else{
-             NSLog(@"add data success");
+             NSLog(@"add user info success");
          }
          
      }];

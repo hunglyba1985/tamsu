@@ -21,7 +21,7 @@
     self.title = @"Main view";
     self.ref = [[FIRDatabase database] reference];
     [self addData];
-    
+    [self uploadUserNotificationToken];
 }
 
 
@@ -44,6 +44,22 @@
          }
          
      }];
+    
+}
+
+-(void) uploadUserNotificationToken {
+    if ([FIRAuth auth].currentUser){
+        NSDictionary *userActive = @{UserNotificationToken:[[NSUserDefaults standardUserDefaults] objectForKey:UserNotificationToken]};
+        [[[_ref child:UserCollection] child:[FIRAuth auth].currentUser.uid]
+         updateChildValues:userActive withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+             if (error) {
+                 NSLog(@"error with adding document %@",error);
+             }else{
+                 NSLog(@"update user status success");
+             }
+             
+         }];
+    }
     
 }
 

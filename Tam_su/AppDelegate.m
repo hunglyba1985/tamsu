@@ -119,17 +119,19 @@
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     
-    NSDictionary *userInactive = @{UserActive:Inactive};
-    [[[_ref child:UserCollection] child:[FIRAuth auth].currentUser.uid]
-     updateChildValues:userInactive withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
-         if (error) {
-             NSLog(@"error with adding document %@",error);
-         }else{
-             NSLog(@"update user status");
-         }
-         
-     }];
-    
+    if ([FIRAuth auth].currentUser){
+        NSDictionary *userInactive = @{UserActive:Inactive};
+        [[[_ref child:UserCollection] child:[FIRAuth auth].currentUser.uid]
+         updateChildValues:userInactive withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+             if (error) {
+                 NSLog(@"error with adding document %@",error);
+             }else{
+                 NSLog(@"update user status");
+             }
+             
+         }];
+    }
+   
 }
 
 
@@ -141,16 +143,19 @@
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
     
-    NSDictionary *userActive = @{UserActive:Active};
-    [[[_ref child:UserCollection] child:[FIRAuth auth].currentUser.uid]
-     updateChildValues:userActive withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
-         if (error) {
-             NSLog(@"error with adding document %@",error);
-         }else{
-             NSLog(@"update user status success");
-         }
-         
-     }];
+    if ([FIRAuth auth].currentUser){
+        NSDictionary *userActive = @{UserActive:Active};
+        [[[_ref child:UserCollection] child:[FIRAuth auth].currentUser.uid]
+         updateChildValues:userActive withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+             if (error) {
+                 NSLog(@"error with adding document %@",error);
+             }else{
+                 NSLog(@"update user status success");
+             }
+             
+         }];
+    }
+  
 }
 
 
@@ -250,8 +255,12 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
 - (void)messaging:(FIRMessaging *)messaging didReceiveRegistrationToken:(NSString *)fcmToken {
     NSLog(@"FCM registration token: %@", fcmToken);
     
+    NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
+    [userDefault setObject:fcmToken forKey:UserNotificationToken];
+    
     // TODO: If necessary send token to application server.
     // Note: This callback is fired at each app startup and whenever a new token is generated.
+  
 }
 // [END refresh_token]
 

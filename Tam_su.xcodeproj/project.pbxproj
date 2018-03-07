@@ -138,16 +138,7 @@
 				04898027204FAD3000EC4A9B /* Tam_su.entitlements */,
 				04897FF3204FA71D00EC4A9B /* AppDelegate.h */,
 				04897FF4204FA71D00EC4A9B /* AppDelegate.m */,
-				0489802C204FD15B00EC4A9B /* UserRegister.h */,
-				0489802D204FD15B00EC4A9B /* UserRegister.m */,
-				0489802F204FD16500EC4A9B /* VerifyCode.h */,
-				04898030204FD16500EC4A9B /* VerifyCode.m */,
-				04898034204FD68A00EC4A9B /* MainViewController.h */,
-				04898035204FD68A00EC4A9B /* MainViewController.m */,
-				04898037204FE4C500EC4A9B /* SettingViewController.h */,
-				04898038204FE4C500EC4A9B /* SettingViewController.m */,
-				0489803D204FEF8300EC4A9B /* TabBarController.h */,
-				0489803E204FEF8300EC4A9B /* TabBarController.m */,
+				72EE995B20501C180049A77B /* Controller */,
 				04898032204FD31600EC4A9B /* Define.h */,
 				04898033204FD39800EC4A9B /* PrefixHeader.pch */,
 				04897FF9204FA71D00EC4A9B /* Main.storyboard */,
@@ -199,6 +190,23 @@
 				5D9969C82FA0038B1CE3BFB2 /* Pods-Tam_suUITests.release.xcconfig */,
 			);
 			name = Pods;
+			sourceTree = "<group>";
+		};
+		72EE995B20501C180049A77B /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				0489802C204FD15B00EC4A9B /* UserRegister.h */,
+				0489802D204FD15B00EC4A9B /* UserRegister.m */,
+				0489802F204FD16500EC4A9B /* VerifyCode.h */,
+				04898030204FD16500EC4A9B /* VerifyCode.m */,
+				04898034204FD68A00EC4A9B /* MainViewController.h */,
+				04898035204FD68A00EC4A9B /* MainViewController.m */,
+				04898037204FE4C500EC4A9B /* SettingViewController.h */,
+				04898038204FE4C500EC4A9B /* SettingViewController.m */,
+				0489803D204FEF8300EC4A9B /* TabBarController.h */,
+				0489803E204FEF8300EC4A9B /* TabBarController.m */,
+			);
+			path = Controller;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

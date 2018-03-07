@@ -15,7 +15,7 @@
 #define UserName @"userName"
 #define UserPhone @"userPhone"
 #define UserActive @"userActive"
-
+#define UserNotificationToken @"userNotificationToken"
 
 
 // Collection

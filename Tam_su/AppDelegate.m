@@ -9,6 +9,9 @@
 #import "AppDelegate.h"
 @import Firebase;
 @import FirebaseAuth;
+#import "MainViewController.h"
+#import "UserRegister.h"
+
 
 #if defined(__IPHONE_10_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
 @import UserNotifications;
@@ -27,6 +30,9 @@
     // Use Firebase library to configure APIs
     [FIRApp configure];
 
+    [self checkUserSignIn];
+
+    
     // [START set_messaging_delegate]
     [FIRMessaging messaging].delegate = self;
     // [END set_messaging_delegate]
@@ -54,6 +60,45 @@
     [application registerForRemoteNotifications];
     
     return YES;
+}
+
+-(void) checkUserSignIn
+{
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    
+    if ([FIRAuth auth].currentUser) {
+        // User is signed in.
+        // ...
+        NSLog(@"user signed in-------");
+        NSLog(@"get current user is %@",[FIRAuth auth].currentUser.phoneNumber);
+        MainViewController *mainView = [storyboard instantiateViewControllerWithIdentifier:@"MainViewController"];
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:mainView];
+        self.window.rootViewController  = nav;
+        
+//        FIRUser *user = [FIRAuth auth].currentUser;
+//        FIRFirestore *defaultFirestore = [FIRFirestore firestore];
+//        FIRDocumentReference *docRef= [[defaultFirestore collectionWithPath:UserCollectionData] documentWithPath:user.uid];
+//        [docRef getDocumentWithCompletion:^(FIRDocumentSnapshot *snapshot, NSError *error) {
+//            if (snapshot.exists) {
+//                NSLog(@"App delegate Document data: %@", snapshot.data);
+//                NSDictionary *userProfile = snapshot.data;
+//                User *currentUser = [[User alloc] initWithData:userProfile];
+//                [LocationMode shareInstance].currentUserProfile = currentUser;
+//            } else {
+//                NSLog(@"Document does not exist");
+//            }
+//        }];
+        
+    } else {
+        // No user is signed in.
+        // ...
+        NSLog(@"no user signed in");
+        UserRegister *welcomeView = [storyboard instantiateViewControllerWithIdentifier:@"UserRegister"];
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:welcomeView];
+        self.window.rootViewController = nav;
+    }
+    [self.window makeKeyAndVisible];
+    
 }
 
 

@@ -7,7 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "XLFormViewController.h"
 
 @interface UserRegister : XLFormViewController
 

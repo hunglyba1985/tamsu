@@ -11,6 +11,8 @@
 @import FirebaseAuth;
 #import "MainViewController.h"
 #import "UserRegister.h"
+#import "TabBarController.h"
+
 
 
 #if defined(__IPHONE_10_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
@@ -71,7 +73,7 @@
         // ...
         NSLog(@"user signed in-------");
         NSLog(@"get current user is %@",[FIRAuth auth].currentUser.phoneNumber);
-        MainViewController *mainView = [storyboard instantiateViewControllerWithIdentifier:@"MainViewController"];
+        TabBarController *mainView = [storyboard instantiateViewControllerWithIdentifier:@"TabBarController"];
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:mainView];
         self.window.rootViewController  = nav;
         

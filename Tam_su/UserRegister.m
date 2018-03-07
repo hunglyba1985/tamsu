@@ -139,7 +139,7 @@ NSString *const kButton = @"button";
                                                     NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
                                                     [userDefault setObject:verificationID forKey:AuthVerificationID];
                                                     // save user name to update later, this logic seems still need to improve
-                                                    [userDefault setObject:[formValue objectForKey:kName] forKey:UserNameUpdate];
+                                                    [userDefault setObject:[formValue objectForKey:kName] forKey:UserName];
                                                     [userDefault setObject:[formValue objectForKey:kNumber] forKey:UserPhone];
                                                     
                                                     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];

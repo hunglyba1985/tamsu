@@ -11,6 +11,7 @@
 #import <FirebaseAuth/FirebaseAuth.h>
 //#import "DriverRegister.h"
 #import "MainViewController.h"
+#import "TabBarController.h"
 
 
 
@@ -18,6 +19,7 @@ NSString *const kVerifyButton = @"button";
 NSString *const kVerifyCode = @"verifyCode";
 
 @interface VerifyCode ()
+@property (strong, nonatomic) FIRDatabaseReference *ref;
 
 @end
 
@@ -27,6 +29,8 @@ NSString *const kVerifyCode = @"verifyCode";
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self){
         [self initializeForm];
+        self.ref = [[FIRDatabase database] reference];
+
     }
     return self;
 }
@@ -119,7 +123,27 @@ NSString *const kVerifyCode = @"verifyCode";
                                   {
                                       // User successfully signed in. Get user data from the FIRUser object
                                       // ...
+                                      
+                                      NSString *userName = [[NSUserDefaults standardUserDefaults] objectForKey:UserName];
+                                      NSString *userPhone = [[NSUserDefaults standardUserDefaults] objectForKey:UserPhone];
+                                      
+                                      NSDictionary *userInfo = @{UserName: userName,
+                                                                 UserPhone:userPhone
+                                                                 };
+                                      
+                                      [[[_ref child:UserCollection] child:user.uid]
+                                       setValue:userInfo withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+                                           if (error) {
+                                               NSLog(@"error with adding document %@",error);
+                                           }else{
+                                               NSLog(@"add data success");
+                                           }
+                                           
+                                       }];
+                                      
+                                      
                                       [self goToMainView];
+                                      
 
 //                                      FIRFirestore *defaultFirestore = [FIRFirestore firestore];
 //                                      FIRDocumentReference *docRef= [[defaultFirestore collectionWithPath:UserCollectionData] documentWithPath:user.uid];
@@ -158,7 +182,7 @@ NSString *const kVerifyCode = @"verifyCode";
 -(void) goToMainView
 {
       UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
-      MainViewController *mainView = [storyboard instantiateViewControllerWithIdentifier:@"MainViewController"];
+      TabBarController *mainView = [storyboard instantiateViewControllerWithIdentifier:@"TabBarController"];
       [self.navigationController pushViewController:mainView animated:true];
 }
 
@@ -167,7 +191,7 @@ NSString *const kVerifyCode = @"verifyCode";
 -(void) updateUserName
 {
     FIRUserProfileChangeRequest *changeRequest = [[FIRAuth auth].currentUser profileChangeRequest];
-    changeRequest.displayName = [[NSUserDefaults standardUserDefaults] objectForKey:UserNameUpdate];
+    changeRequest.displayName = [[NSUserDefaults standardUserDefaults] objectForKey:UserName];
     [changeRequest commitChangesWithCompletion:^(NSError *_Nullable error) {
         // ...
         if (error) {

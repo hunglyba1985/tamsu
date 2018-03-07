@@ -9,6 +9,7 @@
 #import "MainViewController.h"
 
 @interface MainViewController ()
+@property (strong, nonatomic) FIRDatabaseReference *ref;
 
 @end
 
@@ -18,6 +19,32 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     self.title = @"Main view";
+    self.ref = [[FIRDatabase database] reference];
+    [self addData];
+    
+}
+
+
+-(void) addData{
+    
+    
+    NSString *userName = [[NSUserDefaults standardUserDefaults] objectForKey:UserName];
+    NSString *userPhone = [[NSUserDefaults standardUserDefaults] objectForKey:UserPhone];
+    
+    NSDictionary *userInfo = @{UserName: userName,
+                               UserPhone:userPhone
+                               };
+    
+    [[[_ref child:UserCollection] child:[FIRAuth auth].currentUser.uid]
+     setValue:userInfo withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+         if (error) {
+             NSLog(@"error with adding document %@",error);
+         }else{
+             NSLog(@"add data success");
+         }
+         
+     }];
+    
 }
 
 - (void)didReceiveMemoryWarning {

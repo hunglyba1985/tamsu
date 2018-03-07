@@ -18,6 +18,8 @@
 		0489802E204FD15B00EC4A9B /* UserRegister.m in Sources */ = {isa = PBXBuildFile; fileRef = 0489802D204FD15B00EC4A9B /* UserRegister.m */; };
 		04898031204FD16500EC4A9B /* VerifyCode.m in Sources */ = {isa = PBXBuildFile; fileRef = 04898030204FD16500EC4A9B /* VerifyCode.m */; };
 		04898036204FD68A00EC4A9B /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 04898035204FD68A00EC4A9B /* MainViewController.m */; };
+		04898039204FE4C500EC4A9B /* SettingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 04898038204FE4C500EC4A9B /* SettingViewController.m */; };
+		0489803F204FEF8300EC4A9B /* TabBarController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0489803E204FEF8300EC4A9B /* TabBarController.m */; };
 		727299A875D1B4299F46F6A2 /* Pods_Tam_su.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 787EAF621E0868E6C0D082FB /* Pods_Tam_su.framework */; };
 		9C8DBA1A8A018CA86C52BBF9 /* Pods_Tam_suTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 366ABA0FA7ECD8A3E9A7A78B /* Pods_Tam_suTests.framework */; };
 		D5813D7AAB67218D61BE20CD /* Pods_Tam_suUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AE366D7CA78A5EDB6D0FEA6 /* Pods_Tam_suUITests.framework */; };
@@ -66,6 +68,10 @@
 		04898033204FD39800EC4A9B /* PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
 		04898034204FD68A00EC4A9B /* MainViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
 		04898035204FD68A00EC4A9B /* MainViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
+		04898037204FE4C500EC4A9B /* SettingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingViewController.h; sourceTree = "<group>"; };
+		04898038204FE4C500EC4A9B /* SettingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingViewController.m; sourceTree = "<group>"; };
+		0489803D204FEF8300EC4A9B /* TabBarController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TabBarController.h; sourceTree = "<group>"; };
+		0489803E204FEF8300EC4A9B /* TabBarController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TabBarController.m; sourceTree = "<group>"; };
 		19930DB5D5E1C062B6ED8F56 /* Pods-Tam_suUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Tam_suUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Tam_suUITests/Pods-Tam_suUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		2994A38583406785BFCAA700 /* Pods-Tam_suTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Tam_suTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Tam_suTests/Pods-Tam_suTests.debug.xcconfig"; sourceTree = "<group>"; };
 		366ABA0FA7ECD8A3E9A7A78B /* Pods_Tam_suTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Tam_suTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -138,6 +144,10 @@
 				04898030204FD16500EC4A9B /* VerifyCode.m */,
 				04898034204FD68A00EC4A9B /* MainViewController.h */,
 				04898035204FD68A00EC4A9B /* MainViewController.m */,
+				04898037204FE4C500EC4A9B /* SettingViewController.h */,
+				04898038204FE4C500EC4A9B /* SettingViewController.m */,
+				0489803D204FEF8300EC4A9B /* TabBarController.h */,
+				0489803E204FEF8300EC4A9B /* TabBarController.m */,
 				04898032204FD31600EC4A9B /* Define.h */,
 				04898033204FD39800EC4A9B /* PrefixHeader.pch */,
 				04897FF9204FA71D00EC4A9B /* Main.storyboard */,
@@ -503,11 +513,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0489803F204FEF8300EC4A9B /* TabBarController.m in Sources */,
 				04898031204FD16500EC4A9B /* VerifyCode.m in Sources */,
 				0489802E204FD15B00EC4A9B /* UserRegister.m in Sources */,
 				04898003204FA71D00EC4A9B /* main.m in Sources */,
 				04898036204FD68A00EC4A9B /* MainViewController.m in Sources */,
 				04897FF5204FA71D00EC4A9B /* AppDelegate.m in Sources */,
+				04898039204FE4C500EC4A9B /* SettingViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

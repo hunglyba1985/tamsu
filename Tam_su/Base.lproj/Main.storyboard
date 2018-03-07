@@ -41,7 +41,7 @@
             </objects>
             <point key="canvasLocation" x="1664.8" y="29.23538230884558"/>
         </scene>
-        <!--Main View Controller-->
+        <!--Main-->
         <scene sceneID="ThE-tW-ons">
             <objects>
                 <viewController storyboardIdentifier="MainViewController" id="53Q-lU-XZA" customClass="MainViewController" sceneMemberID="viewController">
@@ -51,10 +51,27 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <viewLayoutGuide key="safeArea" id="Het-Q8-0qL"/>
                     </view>
+                    <tabBarItem key="tabBarItem" title="Main" image="home" id="Ahf-4b-QC9"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="zGh-Bs-Lnv" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2362" y="30"/>
+            <point key="canvasLocation" x="3132" y="-150"/>
+        </scene>
+        <!--Setting-->
+        <scene sceneID="l0I-3F-uIZ">
+            <objects>
+                <viewController storyboardIdentifier="SettingViewController" id="Ih6-bs-cSA" customClass="SettingViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="kVB-2I-lXj">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <viewLayoutGuide key="safeArea" id="j00-DY-JpG"/>
+                    </view>
+                    <tabBarItem key="tabBarItem" title="Setting" image="setting" id="aPy-Ag-Lgp"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="UgA-5H-yHz" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3212" y="593"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="xc2-b5-URI">
@@ -74,5 +91,27 @@
             </objects>
             <point key="canvasLocation" x="268" y="30"/>
         </scene>
+        <!--Tab Bar Controller-->
+        <scene sceneID="2ta-Oe-Xbp">
+            <objects>
+                <tabBarController storyboardIdentifier="TabBarController" automaticallyAdjustsScrollViewInsets="NO" id="0DO-Eu-ktE" customClass="TabBarController" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="1YH-Xe-KWZ">
+                        <autoresizingMask key="autoresizingMask"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </tabBar>
+                    <connections>
+                        <segue destination="53Q-lU-XZA" kind="relationship" relationship="viewControllers" id="nVH-J2-ZxZ"/>
+                        <segue destination="Ih6-bs-cSA" kind="relationship" relationship="viewControllers" id="mxE-CE-15b"/>
+                    </connections>
+                </tabBarController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ZqD-R8-oBn" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2337" y="20"/>
+        </scene>
     </scenes>
+    <resources>
+        <image name="home" width="24" height="24"/>
+        <image name="setting" width="24" height="24"/>
+    </resources>
 </document>

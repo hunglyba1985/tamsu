@@ -12,8 +12,13 @@
 
 // User register
 #define AuthVerificationID  @"authVerificationID"
-#define UserNameUpdate @"User name update"
-#define UserPhone @"phone"
+#define UserName @"userName"
+#define UserPhone @"userPhone"
+
+
+
+// Collection
+#define UserCollection @"users"
 
 
 #endif /* Define_h */

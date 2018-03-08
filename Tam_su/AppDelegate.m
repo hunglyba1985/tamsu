@@ -174,7 +174,6 @@ UIBackgroundTaskIdentifier bgTask;
              }else{
                  NSLog(@"applicationDidBecomeActive update user status success");
              }
-             
          }];
     }
   

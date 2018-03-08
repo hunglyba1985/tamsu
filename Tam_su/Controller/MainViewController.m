@@ -22,6 +22,7 @@
     self.ref = [[FIRDatabase database] reference];
     [self addData];
     [self uploadUserNotificationToken];
+    [self getAllUserActive];
 }
 
 
@@ -61,6 +62,24 @@
          }];
     }
     
+}
+
+-(void) getAllUserActive{
+    
+    [[[[self.ref child:UserCollection] queryOrderedByChild:UserActive]
+      queryEqualToValue:Active]
+     observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
+         NSLog(@"get all users active");
+         if (snapshot.value != [NSNull null])
+         {
+             NSArray *allUsersActive = [snapshot.value allValues];
+             NSLog(@"number of all users active is %i",(int)allUsersActive.count);
+             NSLog(@"all user active is %@",allUsersActive);
+//             for (NSDictionary *snap in [snapshot.value allValues]) {
+//                 NSLog(@"---> %@",snap);
+//             }
+         }
+     }];
 }
 
 - (void)didReceiveMemoryWarning {

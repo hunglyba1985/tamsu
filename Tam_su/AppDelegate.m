@@ -19,8 +19,11 @@
 @import UserNotifications;
 #endif
 
+UIBackgroundTaskIdentifier  bgTask;
+
 @interface AppDelegate () <UNUserNotificationCenterDelegate>
 @property (strong, nonatomic) FIRDatabaseReference *ref;
+// Instance member of our background task process
 
 @end
 
@@ -114,25 +117,44 @@
     // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
 }
 
+UIBackgroundTaskIdentifier bgTask;
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    NSLog(@"=== DID ENTER BACKGROUND ===");
+    bgTask = [[UIApplication  sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+        NSLog(@"End of tolerate time. Application should be suspended now if we do not ask more 'tolerance'");
+        // [self askToRunMoreBackgroundTask]; This code seems to be unnecessary. I'll verify it.
+    }];
     
-    if ([FIRAuth auth].currentUser){
-        NSDictionary *userInactive = @{UserActive:Inactive};
-        [[[_ref child:UserCollection] child:[FIRAuth auth].currentUser.uid]
-         updateChildValues:userInactive withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
-             if (error) {
-                 NSLog(@"error with adding document %@",error);
-             }else{
-                 NSLog(@"update user status");
-             }
-             
-         }];
+    if (bgTask == UIBackgroundTaskInvalid) {
+        NSLog(@"This application does not support background mode");
+    } else {
+        //if application supports background mode, we'll see this log.
+        NSLog(@"Application will continue to run in background");
+//        [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(countHowTime) userInfo:nil repeats:YES];
+        if ([FIRAuth auth].currentUser){
+            NSDictionary *userActive = @{UserActive:Inactive};
+            [[[_ref child:UserCollection] child:[FIRAuth auth].currentUser.uid]
+             updateChildValues:userActive withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+                 if (error) {
+                     NSLog(@"error with adding document %@",error);
+                 }else{
+                     NSLog(@"applicationDidEnterBackground update user status success");
+                 }
+                 
+             }];
+        }
     }
+    
+    
+    
+    
    
 }
+
+
 
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
@@ -150,7 +172,7 @@
              if (error) {
                  NSLog(@"error with adding document %@",error);
              }else{
-                 NSLog(@"update user status success");
+                 NSLog(@"applicationDidBecomeActive update user status success");
              }
              
          }];
@@ -161,6 +183,19 @@
 
 - (void)applicationWillTerminate:(UIApplication *)application {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    
+    if ([FIRAuth auth].currentUser){
+        NSDictionary *userInactive = @{UserActive:Inactive};
+        [[[_ref child:UserCollection] child:[FIRAuth auth].currentUser.uid]
+         updateChildValues:userInactive withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+             if (error) {
+                 NSLog(@"error with adding document %@",error);
+             }else{
+                 NSLog(@"update user status");
+             }
+             
+         }];
+    }
 }
 
 

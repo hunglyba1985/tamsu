@@ -55,7 +55,7 @@
              if (error) {
                  NSLog(@"error with adding document %@",error);
              }else{
-                 NSLog(@"update user status success");
+                 NSLog(@"uploadUserNotificationToken success");
              }
              
          }];

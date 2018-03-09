@@ -54,8 +54,9 @@
 }
 
 -(void) uploadUserNotificationToken {
-    if ([FIRAuth auth].currentUser){
-        NSDictionary *userActive = @{UserNotificationToken:[[NSUserDefaults standardUserDefaults] objectForKey:UserNotificationToken]};
+        NSString *userNotificationToken = [[NSUserDefaults standardUserDefaults] objectForKey:UserNotificationToken];
+    if (userNotificationToken) {
+        NSDictionary *userActive = @{UserNotificationToken:userNotificationToken};
         [[[_ref child:UserCollection] child:[FIRAuth auth].currentUser.uid]
          updateChildValues:userActive withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
              if (error) {
@@ -63,10 +64,8 @@
              }else{
                  NSLog(@"uploadUserNotificationToken success");
              }
-             
          }];
     }
-    
 }
 
 -(void) getAllUserActive{

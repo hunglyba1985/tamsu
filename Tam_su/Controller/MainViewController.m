@@ -8,8 +8,12 @@
 
 #import "MainViewController.h"
 
-@interface MainViewController ()
+@interface MainViewController () <UITableViewDataSource,UITableViewDelegate>
+{
+    NSArray *friendsList;
+}
 @property (strong, nonatomic) FIRDatabaseReference *ref;
+@property (strong, nonatomic) UITableView *tableView;
 
 @end
 
@@ -23,6 +27,7 @@
     [self addData];
     [self uploadUserNotificationToken];
     [self getAllUserActive];
+    [self showListAllFriends];
 }
 
 
@@ -75,12 +80,39 @@
              NSArray *allUsersActive = [snapshot.value allValues];
              NSLog(@"number of all users active is %i",(int)allUsersActive.count);
              NSLog(@"all user active is %@",allUsersActive);
+             friendsList = allUsersActive;
+             [self.tableView reloadData];
 //             for (NSDictionary *snap in [snapshot.value allValues]) {
 //                 NSLog(@"---> %@",snap);
 //             }
          }
      }];
 }
+
+-(void) showListAllFriends{
+    _tableView = [[UITableView alloc] initWithFrame:self.view.frame style:UITableViewStylePlain];
+    [_tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"tableCell"];
+    _tableView.delegate = self;
+    _tableView.dataSource = self;
+    [self.view addSubview:_tableView];
+    
+    
+}
+
+#pragma mark TableViewDatasource
+-(NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return friendsList.count;
+}
+-(UITableViewCell*) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"tableCell" forIndexPath:indexPath];
+    NSDictionary *friendInfo = [friendsList objectAtIndex:indexPath.row];
+    cell.textLabel.text = friendInfo[UserName];
+    
+    
+    return cell;
+}
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

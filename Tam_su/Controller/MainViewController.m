@@ -38,7 +38,8 @@
     NSString *userPhone = [[NSUserDefaults standardUserDefaults] objectForKey:UserPhone];
     
     NSDictionary *userInfo = @{UserName: userName,
-                               UserPhone:userPhone
+                               UserPhone:userPhone,
+                               UserId:[FIRAuth auth].currentUser.uid
                                };
     
     [[[_ref child:UserCollection] child:[FIRAuth auth].currentUser.uid]

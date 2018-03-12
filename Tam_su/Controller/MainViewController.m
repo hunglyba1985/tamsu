@@ -70,8 +70,24 @@
 
 -(void) getAllUserActive{
     
-    [[[[self.ref child:UserCollection] queryOrderedByChild:UserActive]
-      queryEqualToValue:Active]
+//    [[[[self.ref child:UserCollection] queryOrderedByChild:UserActive]
+//      queryEqualToValue:Active]
+//     observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
+//         NSLog(@"get all users active");
+//         if (snapshot.value != [NSNull null])
+//         {
+//             NSArray *allUsersActive = [snapshot.value allValues];
+//             NSLog(@"number of all users active is %i",(int)allUsersActive.count);
+//             NSLog(@"all user active is %@",allUsersActive);
+//             friendsList = allUsersActive;
+//             [self.tableView reloadData];
+////             for (NSDictionary *snap in [snapshot.value allValues]) {
+////                 NSLog(@"---> %@",snap);
+////             }
+//         }
+//     }];
+    
+    [[self.ref child:UserCollection]
      observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
          NSLog(@"get all users active");
          if (snapshot.value != [NSNull null])
@@ -81,11 +97,12 @@
              NSLog(@"all user active is %@",allUsersActive);
              friendsList = allUsersActive;
              [self.tableView reloadData];
-//             for (NSDictionary *snap in [snapshot.value allValues]) {
-//                 NSLog(@"---> %@",snap);
-//             }
+             //             for (NSDictionary *snap in [snapshot.value allValues]) {
+             //                 NSLog(@"---> %@",snap);
+             //             }
          }
      }];
+    
 }
 
 -(void) showListAllFriends{
@@ -112,6 +129,13 @@
     return cell;
 }
 
+
+#pragma mark TableViewDelegate
+-(void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSLog(@"user info %@",[friendsList objectAtIndex:indexPath.row]);
+    
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

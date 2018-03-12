@@ -10,11 +10,15 @@
 #import "XLForm.h"
 #import "VerifyCode.h"
 #import <FirebaseAuth/FirebaseAuth.h>
+#import "TabBarController.h"
 
 
 NSString *const kName = @"name";
 NSString *const kNumber = @"number";
 NSString *const kButton = @"button";
+NSString *const kEmail = @"email";
+NSString *const kPassword = @"password";
+NSString *const kRegisterEmail = @"register email";
 
 @interface UserRegister ()
 
@@ -45,12 +49,13 @@ NSString *const kButton = @"button";
 {
     XLFormDescriptor * form;
     XLFormSectionDescriptor * section;
+    XLFormSectionDescriptor * section1;
+
     XLFormRowDescriptor * row;
     
     form = [XLFormDescriptor formDescriptor];
     
-    section = [XLFormSectionDescriptor formSectionWithTitle:@"Please set information below to register"];
-    section.footerTitle = @"We can add more text here to infor user";
+    section = [XLFormSectionDescriptor formSectionWithTitle:@"Register with phone"];
     [form addFormSection:section];
     
     
@@ -73,9 +78,45 @@ NSString *const kButton = @"button";
     [form addFormSection:section];
     
     // Button
-    XLFormRowDescriptor * buttonRow = [XLFormRowDescriptor formRowDescriptorWithTag:kButton rowType:XLFormRowDescriptorTypeButton title:@"Register"];
+    XLFormRowDescriptor * buttonRow = [XLFormRowDescriptor formRowDescriptorWithTag:kButton rowType:XLFormRowDescriptorTypeButton title:@"Register with phone"];
     buttonRow.action.formSelector = @selector(didTouchButton:);
     [section addFormRow:buttonRow];
+    
+    
+    section1 = [XLFormSectionDescriptor formSectionWithTitle:@"Register with email"];
+    [form addFormSection:section1];
+    
+    // Email
+    // Name
+    row = [XLFormRowDescriptor formRowDescriptorWithTag:kName rowType:XLFormRowDescriptorTypeText title:@"Name:"];
+    row.required = YES;
+    [section1 addFormRow:row];
+    
+    // Email
+    row = [XLFormRowDescriptor formRowDescriptorWithTag:kEmail rowType:XLFormRowDescriptorTypeText title:@"Email"];
+    [row.cellConfigAtConfigure setObject:@(NSTextAlignmentRight) forKey:@"textField.textAlignment"];
+    row.required = YES;
+    row.value = @"email";
+    [row addValidator:[XLFormValidator emailValidator]];
+    [section1 addFormRow:row];
+    
+    // Password
+    row = [XLFormRowDescriptor formRowDescriptorWithTag:kPassword rowType:XLFormRowDescriptorTypePassword title:@"Password"];
+    [row.cellConfigAtConfigure setObject:@"Required..." forKey:@"textField.placeholder"];
+    [row.cellConfigAtConfigure setObject:@(NSTextAlignmentRight) forKey:@"textField.textAlignment"];
+    row.required = YES;
+    [row addValidator:[XLFormRegexValidator formRegexValidatorWithMsg:@"At least 6, max 32 characters" regex:@"^(?=.*\\d)(?=.*[A-Za-z]).{6,32}$"]];
+    [section1 addFormRow:row];
+    
+    section1 = [XLFormSectionDescriptor formSectionWithTitle:@""];
+    section1.footerTitle = @"";
+    [form addFormSection:section1];
+    
+    // Register click
+    XLFormRowDescriptor * registerEmailButotn = [XLFormRowDescriptor formRowDescriptorWithTag:kRegisterEmail rowType:XLFormRowDescriptorTypeButton title:@"Register with email"];
+    registerEmailButotn.action.formSelector = @selector(registerWithEmailClick:);
+    [section1 addFormRow:registerEmailButotn];
+    
     
     self.form = form;
     
@@ -105,8 +146,43 @@ NSString *const kButton = @"button";
     if(validate) {
         [self showVerifyView];
     }
+}
+
+-(void) registerWithEmailClick:(UIButton *) button
+{
+    BOOL validate = [self validateEmailAndPassword];
+    if (validate) {
+        NSLog(@"start register with email");
+        [self createUserWithEmail];
+        
+    }
+}
+
+
+-(void) createUserWithEmail{
     
-    
+    NSDictionary *formValue = self.formValues;
+    NSLog(@"form value is %@",formValue);
+    NSString *email = [formValue objectForKey:kEmail];
+    NSString *password = [formValue objectForKey:kPassword];
+    NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
+    [userDefault setObject:[formValue objectForKey:kName] forKey:UserName];
+    [userDefault setObject:@"" forKey:UserPhone];
+
+    [[FIRAuth auth] createUserWithEmail:email
+                               password:password
+                             completion:^(FIRUser *_Nullable user, NSError *_Nullable error) {
+                                 // ...
+                                 NSLog(@"register success with user %@",user);
+                                 [self goToMainView];
+                             }];
+}
+
+-(void) goToMainView
+{
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    TabBarController *mainView = [storyboard instantiateViewControllerWithIdentifier:@"TabBarController"];
+    [self.navigationController pushViewController:mainView animated:true];
 }
 
 -(void) showVerifyView
@@ -170,10 +246,35 @@ NSString *const kButton = @"button";
             UITableViewCell * cell = [self.tableView cellForRowAtIndexPath:[self.form indexPathOfFormRow:validationStatus.rowDescriptor]];
             [self animateCell:cell];
         }
+        
     }];
     
     return validate;
 }
+
+-(BOOL) validateEmailAndPassword
+{
+    __block BOOL validate = true;
+    
+    NSArray * array = [self formValidationErrors];
+    [array enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        XLFormValidationStatus * validationStatus = [[obj userInfo] objectForKey:XLValidationStatusErrorKey];
+      if ([validationStatus.rowDescriptor.tag isEqualToString:kEmail]){
+           validate = false;
+            UITableViewCell * cell = [self.tableView cellForRowAtIndexPath:[self.form indexPathOfFormRow:validationStatus.rowDescriptor]];
+            [self animateCell:cell];
+        }
+        else if ([validationStatus.rowDescriptor.tag isEqualToString:kPassword]){
+            validate = false;
+            UITableViewCell * cell = [self.tableView cellForRowAtIndexPath:[self.form indexPathOfFormRow:validationStatus.rowDescriptor]];
+            [self animateCell:cell];
+        }
+    }];
+    
+    return validate;
+}
+
+
 
 #pragma mark - Helper
 

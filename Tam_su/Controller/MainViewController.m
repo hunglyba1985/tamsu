@@ -7,6 +7,8 @@
 //
 
 #import "MainViewController.h"
+#import "ChatViewController.h"
+
 
 @interface MainViewController () <UITableViewDataSource,UITableViewDelegate>
 {
@@ -135,7 +137,15 @@
 -(void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     NSLog(@"user info %@",[friendsList objectAtIndex:indexPath.row]);
+    [self showChatViewController];
     
+}
+
+
+-(void) showChatViewController{
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    ChatViewController *chatView = [storyboard instantiateViewControllerWithIdentifier:@"ChatViewController"];
+    [self.navigationController pushViewController:chatView animated:YES];
 }
 
 - (void)didReceiveMemoryWarning {

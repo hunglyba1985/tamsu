@@ -9,7 +9,11 @@
 #import "ChatViewController.h"
 
 @interface ChatViewController ()
+{
+    BOOL receiverStatus;
+}
 @property (nonatomic,strong) NSMutableArray *messages;
+@property (strong, nonatomic) FIRDatabaseReference *ref;
 
 @end
 
@@ -30,6 +34,14 @@
      */
 //    self.collectionView.accessoryDelegate = self;
     
+    self.ref = [[FIRDatabase database] reference];
+
+    if ([self.receiver[UserActive] isEqualToString:Active]) {
+        receiverStatus = YES;
+    }else{
+        receiverStatus = NO;
+    }
+    [self observeStatusOfReceiver];
 }
 
 -(void) viewWillAppear:(BOOL)animated{
@@ -49,9 +61,24 @@
     
 }
 
+-(void) observeStatusOfReceiver{
+    
+    [[[_ref child:@"users"] child:self.receiver[UserId]] observeSingleEventOfType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
+        // Get user value
+        NSDictionary *user = snapshot.value;
+        if ([user[UserActive] isEqualToString:Active]) {
+            receiverStatus = YES;
+        }else{
+            receiverStatus = NO;
+        }
+        // ...
+    } withCancelBlock:^(NSError * _Nonnull error) {
+        NSLog(@"%@", error.localizedDescription);
+    }];
+}
+
 
 #pragma mark - JSQMessagesViewController method overrides
-
 - (void)didPressSendButton:(UIButton *)button
            withMessageText:(NSString *)text
                   senderId:(NSString *)senderId
@@ -68,6 +95,27 @@
     
     // [JSQSystemSoundPlayer jsq_playMessageSentSound];
     NSLog(@"did press send button ------");
+    
+    NSLog(@"we get tex message here: %@ from sender id: %@ and sender display name is: %@",text,senderId,senderDisplayName);
+    if (!receiverStatus) {
+        NSDictionary *notification = @{ReceiverId:self.receiver[UserId],
+                                       SenderId:[FIRAuth auth].currentUser.uid,
+                                       SenderName:[[NSUserDefaults standardUserDefaults] objectForKey:UserName]
+                                       };
+        
+        [[[_ref child:Notification] childByAutoId]
+         updateChildValues:notification withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+             if (error) {
+                 NSLog(@"error with adding document %@",error);
+             }else{
+                 NSLog(@"send notification for receiver ");
+             }
+             
+         }];
+        
+     
+    }
+    
     JSQMessage *message = [[JSQMessage alloc] initWithSenderId:senderId
                                              senderDisplayName:senderDisplayName
                                                           date:date
@@ -92,7 +140,8 @@
 }
 
 - (NSString *)senderDisplayName {
-    return @"sender display name";
+    return [[NSUserDefaults standardUserDefaults] objectForKey:UserName];
+;
 }
 
 - (id<JSQMessageData>)collectionView:(JSQMessagesCollectionView *)collectionView messageDataForItemAtIndexPath:(NSIndexPath *)indexPath

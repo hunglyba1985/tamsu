@@ -20,12 +20,19 @@
 
 // Collection
 #define UserCollection @"users"
+#define Notification @"notification"
 
 
 // Bool value
 #define Active @"yes"
 #define Inactive @"no"
 
+
+
+// Notification define
+#define SenderId @"senderId"
+#define ReceiverId @"receiverId"
+#define SenderName @"senderName"
 
 
 #endif /* Define_h */

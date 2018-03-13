@@ -10,5 +10,7 @@
 #import "JSQMessages.h"
 
 @interface ChatViewController : JSQMessagesViewController
+@property (nonatomic, strong) NSDictionary *receiver;
+
 
 @end

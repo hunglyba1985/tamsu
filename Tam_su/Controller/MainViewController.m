@@ -97,7 +97,7 @@
          {
              NSArray *allUsersActive = [snapshot.value allValues];
              NSLog(@"number of all users active is %i",(int)allUsersActive.count);
-             NSLog(@"all user active is %@",allUsersActive);
+//             NSLog(@"all user active is %@",allUsersActive);
              friendsList = allUsersActive;
              [self.tableView reloadData];
              //             for (NSDictionary *snap in [snapshot.value allValues]) {
@@ -136,15 +136,15 @@
 #pragma mark TableViewDelegate
 -(void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSLog(@"user info %@",[friendsList objectAtIndex:indexPath.row]);
-    [self showChatViewController];
-    
+    [self showChatViewController:[friendsList objectAtIndex:indexPath.row]];
 }
 
 
--(void) showChatViewController{
+-(void) showChatViewController:(NSDictionary *) receiver
+{
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     ChatViewController *chatView = [storyboard instantiateViewControllerWithIdentifier:@"ChatViewController"];
+    chatView.receiver = receiver;
     [self.navigationController pushViewController:chatView animated:YES];
 }
 

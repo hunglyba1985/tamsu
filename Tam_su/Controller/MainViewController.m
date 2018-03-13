@@ -32,6 +32,12 @@
     [self showListAllFriends];
 }
 
+-(void) viewWillDisappear:(BOOL)animated{
+    [super viewWillDisappear:animated];
+    NSLog(@"main view will disappear");
+    [self.ref removeAllObservers];
+}
+
 
 -(void) addData{
     

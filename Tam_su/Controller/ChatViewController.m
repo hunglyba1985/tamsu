@@ -42,6 +42,7 @@
         receiverStatus = NO;
     }
     [self observeStatusOfReceiver];
+    
 }
 
 -(void) viewWillAppear:(BOOL)animated{
@@ -63,9 +64,10 @@
 
 -(void) observeStatusOfReceiver{
     
-    [[[_ref child:@"users"] child:self.receiver[UserId]] observeSingleEventOfType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
+    [[[_ref child:@"users"] child:self.receiver[UserId]] observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
         // Get user value
         NSDictionary *user = snapshot.value;
+        NSLog(@"receiver info %@",user);
         if ([user[UserActive] isEqualToString:Active]) {
             receiverStatus = YES;
         }else{
@@ -98,11 +100,11 @@
     
     NSLog(@"we get tex message here: %@ from sender id: %@ and sender display name is: %@",text,senderId,senderDisplayName);
     if (!receiverStatus) {
+        NSLog(@"receiver inactive ------");
         NSDictionary *notification = @{ReceiverId:self.receiver[UserId],
                                        SenderId:[FIRAuth auth].currentUser.uid,
                                        SenderName:[[NSUserDefaults standardUserDefaults] objectForKey:UserName]
                                        };
-        
         [[[_ref child:Notification] childByAutoId]
          updateChildValues:notification withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
              if (error) {
@@ -112,8 +114,8 @@
              }
              
          }];
-        
-     
+    }else{
+        NSLog(@"receiver active");
     }
     
     JSQMessage *message = [[JSQMessage alloc] initWithSenderId:senderId

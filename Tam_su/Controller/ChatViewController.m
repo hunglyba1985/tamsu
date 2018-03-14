@@ -13,6 +13,7 @@
     BOOL receiverStatus;
     BOOL writeChanelOnReceiver;
     NSString *channelId;
+    BOOL observeConversationDone;
 }
 @property (nonatomic,strong) NSMutableArray *messages;
 @property (nonatomic,strong) NSMutableArray *tempMessages;
@@ -117,6 +118,7 @@
         }
     }
     if (channelId) {
+        observeConversationDone = YES;
         [[[_ref child:Channel] child:channelId] observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
             // Get newsest message here
             NSDictionary *newestMessage = snapshot.value;
@@ -131,6 +133,8 @@
         } withCancelBlock:^(NSError * _Nonnull error) {
             NSLog(@"%@", error.localizedDescription);
         }];
+    }else{
+        NSLog(@"don't get channel id from myself because we can't get it");
     }
   
 }
@@ -181,6 +185,10 @@
                  NSLog(@"error with adding document %@",error);
              }else{
                  NSLog(@"send message to channel success");
+                 if (!observeConversationDone) {
+                     observeConversationDone = YES;
+                     [self observeConversationIfFirstTimeNotWork];
+                 }
              }
          }];
     }else{
@@ -191,10 +199,31 @@
                  NSLog(@"error with adding document %@",error);
              }else{
                  NSLog(@"send message to channel success");
+                 if (!observeConversationDone) {
+                     observeConversationDone = YES;
+                     [self observeConversationIfFirstTimeNotWork];
+                 }
              }
          }];
     }
    
+}
+
+-(void) observeConversationIfFirstTimeNotWork{
+    [[[_ref child:Channel] child:channelId] observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
+        // Get newsest message here
+        NSDictionary *newestMessage = snapshot.value;
+        NSLog(@"newest message is %@",newestMessage);
+        JSQMessage *message = [JSQMessage    messageWithSenderId:newestMessage[SenderId]
+                                                     displayName:newestMessage[SenderName]
+                                                            text:newestMessage[TexMessage]];
+        [self.messages addObject:message];
+        [self.tempMessages addObject:newestMessage];
+        [self finishReceivingMessageAnimated:YES];
+        
+    } withCancelBlock:^(NSError * _Nonnull error) {
+        NSLog(@"%@", error.localizedDescription);
+    }];
 }
 
 -(void) writeChannelOnReceiver{
@@ -227,8 +256,11 @@
             
             NSLog(@"finally channel id will be like this --------- %@",combineId);
             
+            NSMutableArray *receiverOldChannels = [[NSMutableArray alloc] initWithArray:self.receiver[UserChannel]];
+            [receiverOldChannels addObject:combineId];
+            
             NSDictionary *receiverConversation = @{
-                                                   UserChannel:@[combineId]
+                                                   UserChannel:receiverOldChannels
                                                    };
             [[[_ref child:UserCollection] child:self.receiver[UserId]]
              updateChildValues:receiverConversation withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
@@ -452,12 +484,12 @@
 //}
 
 - (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath{
-    JSQMessage *msg = [self.messages objectAtIndex:indexPath.item];
-    NSDictionary *temMsg = [self.tempMessages objectAtIndex:indexPath.item];
-    
-    NSLog(@"didEndDisplayingCell %@",msg.text);
-    NSLog(@"didEndDisplayingCell temp data %@",temMsg[TexMessage]);
-    [self deleteMessageReaded:msg atIndex:indexPath];
+//    JSQMessage *msg = [self.messages objectAtIndex:indexPath.item];
+//    NSDictionary *temMsg = [self.tempMessages objectAtIndex:indexPath.item];
+//
+//    NSLog(@"didEndDisplayingCell %@",msg.text);
+//    NSLog(@"didEndDisplayingCell temp data %@",temMsg[TexMessage]);
+//    [self deleteMessageReaded:msg atIndex:indexPath];
     
 }
 

@@ -142,6 +142,7 @@
 #pragma mark TableViewDelegate
 -(void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    // TODO: We have create channel for that conversation
     [self showChatViewController:[friendsList objectAtIndex:indexPath.row]];
 }
 

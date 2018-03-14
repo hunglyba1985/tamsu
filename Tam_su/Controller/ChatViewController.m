@@ -15,6 +15,7 @@
     NSString *channelId;
 }
 @property (nonatomic,strong) NSMutableArray *messages;
+@property (nonatomic,strong) NSMutableArray *tempMessages;
 @property (strong, nonatomic) FIRDatabaseReference *ref;
 
 @end
@@ -29,7 +30,7 @@
      *  Load up our data for chat view
      */
     _messages = [NSMutableArray new];
-    
+    _tempMessages = [NSMutableArray new];
     
     /**
      *  Set up message accessory button delegate and configuration
@@ -65,12 +66,33 @@
     
 }
 
+-(void) viewWillDisappear:(BOOL)animated{
+    [super viewWillDisappear:animated];
+    // TODO: delete all messages on this channel when user leave this view
+    [self deleteAllMessageOnChannle];
+}
+
+-(void) deleteAllMessageOnChannle{
+    if (channelId) {
+        NSLog(@"delete All Message On Channle ");
+        [[[_ref child:Channel] child:channelId] removeValueWithCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+            if (error) {
+                NSLog(@"remove all message error");
+            }else{
+                NSLog(@"remove all messages success");
+            }
+        }];
+        
+    }
+}
+
+
 // TODO: Observe Status of Receiver
 -(void) observeStatusOfReceiver{
     [[[_ref child:UserCollection] child:self.receiver[UserId]] observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
         // Get user value
         self.receiver = snapshot.value;
-        NSLog(@"receiver info %@",self.receiver);
+//        NSLog(@"receiver info %@",self.receiver);
         if ([self.receiver[UserActive] isEqualToString:Active]) {
             receiverStatus = YES;
         }else{
@@ -98,11 +120,12 @@
         [[[_ref child:Channel] child:channelId] observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
             // Get newsest message here
             NSDictionary *newestMessage = snapshot.value;
-            NSLog(@"newest message is %@",newestMessage);
+//            NSLog(@"newest message is %@",newestMessage);
             JSQMessage *message = [JSQMessage    messageWithSenderId:newestMessage[SenderId]
                                                                 displayName:newestMessage[SenderName]
                                                                        text:newestMessage[TexMessage]];
             [self.messages addObject:message];
+            [self.tempMessages addObject:newestMessage];
             [self finishReceivingMessageAnimated:YES];
             
         } withCancelBlock:^(NSError * _Nonnull error) {
@@ -140,17 +163,19 @@
     NSDictionary *messageItem = @{
                                   SenderId:[FIRAuth auth].currentUser.uid,
                                   SenderName:[[NSUserDefaults standardUserDefaults] objectForKey:UserName],
-                                  TexMessage:text
+                                  TexMessage:text,
+                                  MessageId:[[NSUUID UUID] UUIDString]
                                   };
+
     [self sendMessageToChannles:messageItem];
-    
     [self finishSendingMessageAnimated:YES];
 }
 
+// TODO: Send message to channel firebase
 -(void) sendMessageToChannles:(NSDictionary *) messageItem
 {
     if (channelId) {
-        [[[[_ref child:Channel] child:channelId] childByAutoId]
+        [[[[_ref child:Channel] child:channelId] child:messageItem[MessageId]]
          setValue:messageItem withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
              if (error) {
                  NSLog(@"error with adding document %@",error);
@@ -160,7 +185,7 @@
          }];
     }else{
         channelId = [NSString stringWithFormat:@"%@+%@",[FIRAuth auth].currentUser.uid,self.receiver[UserId]];
-        [[[[_ref child:Channel] child:channelId] childByAutoId]
+        [[[[_ref child:Channel] child:channelId] child:messageItem[MessageId]]
          setValue:messageItem withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
              if (error) {
                  NSLog(@"error with adding document %@",error);
@@ -425,6 +450,44 @@
 //{
 //    return ([message isMediaMessage] && [NSUserDefaults accessoryButtonForMediaMessages]);
 //}
+
+- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath{
+    JSQMessage *msg = [self.messages objectAtIndex:indexPath.item];
+    NSDictionary *temMsg = [self.tempMessages objectAtIndex:indexPath.item];
+    
+    NSLog(@"didEndDisplayingCell %@",msg.text);
+    NSLog(@"didEndDisplayingCell temp data %@",temMsg[TexMessage]);
+    [self deleteMessageReaded:msg atIndex:indexPath];
+    
+}
+
+// TODO: Delete readed message
+-(void) deleteMessageReaded:(JSQMessage *) message atIndex:(NSIndexPath *) indexPath{
+    NSDictionary *tempMsg = [self.tempMessages objectAtIndex:indexPath.item];
+    
+    [[[[_ref child:Channel] child:channelId] child:tempMsg[MessageId]]
+     removeValueWithCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+        if (error) {
+            NSLog(@"remove all message error");
+        }else{
+            NSLog(@"delete Message Readed success");
+            if (self.messages.count >= indexPath.item) {
+                [self.messages removeObjectAtIndex:indexPath.item];
+                [self.tempMessages removeObjectAtIndex:indexPath.item];
+            }
+            [self finishReceivingMessageAnimated:YES];
+        }
+    }];
+}
+
+
+
+- (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
+//    JSQMessage *msg = [self.messages objectAtIndex:indexPath.item];
+    
+//    NSLog(@"willDisplayCell %@",msg.text);
+}
+
 
 #pragma mark - JSQMessages collection view flow layout delegate
 

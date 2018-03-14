@@ -34,6 +34,8 @@
 
 // Conversation define
 #define TexMessage @"texMessage"
+#define MessageId @"messageId"
+
 
 // Notification define
 #define SenderId @"senderId"

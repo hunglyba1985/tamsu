@@ -26,7 +26,6 @@
     // Do any additional setup after loading the view.
     self.title = @"Main view";
     self.ref = [[FIRDatabase database] reference];
-    [self addData];
     [self uploadUserNotificationToken];
     [self getAllUserActive];
     [self showListAllFriends];
@@ -36,30 +35,6 @@
     [super viewWillDisappear:animated];
     NSLog(@"main view will disappear");
     [self.ref removeAllObservers];
-}
-
-
--(void) addData{
-    
-    
-    NSString *userName = [[NSUserDefaults standardUserDefaults] objectForKey:UserName];
-    NSString *userPhone = [[NSUserDefaults standardUserDefaults] objectForKey:UserPhone];
-    
-    NSDictionary *userInfo = @{UserName: userName,
-                               UserPhone:userPhone,
-                               UserId:[FIRAuth auth].currentUser.uid
-                               };
-    
-    [[[_ref child:UserCollection] child:[FIRAuth auth].currentUser.uid]
-     updateChildValues:userInfo withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
-         if (error) {
-             NSLog(@"error with adding document %@",error);
-         }else{
-             NSLog(@"add user info success");
-         }
-         
-     }];
-    
 }
 
 -(void) uploadUserNotificationToken {
@@ -97,7 +72,7 @@
 //     }];
     
     [[self.ref child:UserCollection]
-     observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
+     observeSingleEventOfType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
          NSLog(@"get all users active");
          if (snapshot.value != [NSNull null])
          {
@@ -143,7 +118,9 @@
 -(void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     // TODO: We have create channel for that conversation
+    // Because we will delete the conversation after attendant read it
     [self showChatViewController:[friendsList objectAtIndex:indexPath.row]];
+    
 }
 
 

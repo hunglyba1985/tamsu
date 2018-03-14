@@ -80,7 +80,10 @@ UIBackgroundTaskIdentifier  bgTask;
         // User is signed in.
         // ...
         NSLog(@"user signed in-------");
-        NSLog(@"get current user is %@",[FIRAuth auth].currentUser.phoneNumber);
+//        NSLog(@"get current user is %@",[FIRAuth auth].currentUser.phoneNumber);
+        //  TODO: Start observe myself to know what change
+        [[ObserveMyself shareInstance] startObserve];
+        
         TabBarController *mainView = [storyboard instantiateViewControllerWithIdentifier:@"TabBarController"];
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:mainView];
         self.window.rootViewController  = nav;
@@ -237,7 +240,8 @@ withCompletionHandler:(void(^)())completionHandler {
 //    }
     
     // Print full message.
-    NSLog(@"%@", userInfo);
+    NSLog(@" userNotificationCenter didReceiveNotificationResponse %@", userInfo);
+    
     
     completionHandler();
 }
@@ -260,7 +264,7 @@ withCompletionHandler:(void(^)())completionHandler {
 //        }
         
         // Print full message.
-        NSLog(@"%@", userInfo);
+        NSLog(@"didReceiveRemoteNotification %@", userInfo);
     }
     
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
@@ -278,7 +282,7 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
 //    }
     
     // Print full message.
-    NSLog(@"%@", userInfo);
+    NSLog(@"didReceiveRemoteNotification fetchCompletionHandler %@", userInfo);
     
     completionHandler(UIBackgroundFetchResultNewData);
 }

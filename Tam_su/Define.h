@@ -17,10 +17,14 @@
 #define UserActive @"userActive"
 #define UserNotificationToken @"userNotificationToken"
 #define UserId @"userId"
+#define UserChannel @"userChannel"
+
+
 
 // Collection
 #define UserCollection @"users"
 #define Notification @"notification"
+#define Channel @"channels"
 
 
 // Bool value
@@ -28,6 +32,8 @@
 #define Inactive @"no"
 
 
+// Conversation define
+#define TexMessage @"texMessage"
 
 // Notification define
 #define SenderId @"senderId"

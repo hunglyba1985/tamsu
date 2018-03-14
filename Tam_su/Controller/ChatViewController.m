@@ -11,6 +11,8 @@
 @interface ChatViewController ()
 {
     BOOL receiverStatus;
+    BOOL writeChanelOnReceiver;
+    NSString *channelId;
 }
 @property (nonatomic,strong) NSMutableArray *messages;
 @property (strong, nonatomic) FIRDatabaseReference *ref;
@@ -42,6 +44,7 @@
         receiverStatus = NO;
     }
     [self observeStatusOfReceiver];
+    [self startObserveConversation];
     
 }
 
@@ -62,13 +65,13 @@
     
 }
 
+// TODO: Observe Status of Receiver
 -(void) observeStatusOfReceiver{
-    
-    [[[_ref child:@"users"] child:self.receiver[UserId]] observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
+    [[[_ref child:UserCollection] child:self.receiver[UserId]] observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
         // Get user value
-        NSDictionary *user = snapshot.value;
-        NSLog(@"receiver info %@",user);
-        if ([user[UserActive] isEqualToString:Active]) {
+        self.receiver = snapshot.value;
+        NSLog(@"receiver info %@",self.receiver);
+        if ([self.receiver[UserActive] isEqualToString:Active]) {
             receiverStatus = YES;
         }else{
             receiverStatus = NO;
@@ -77,6 +80,36 @@
     } withCancelBlock:^(NSError * _Nonnull error) {
         NSLog(@"%@", error.localizedDescription);
     }];
+}
+
+// TODO: Observe Conversation
+-(void) startObserveConversation{
+    
+    NSArray *listChannels = [ObserveMyself shareInstance].info[UserChannel];
+    NSLog(@"list channle of myself is %@",listChannels);
+//    NSLog(@"receive information %@",self.receiver);
+    for (NSString *conversationId in listChannels) {
+        if ([conversationId containsString:self.receiver[UserId]]) {
+            NSLog(@"we get conversation id is %@",conversationId);
+            channelId = conversationId;
+        }
+    }
+    if (channelId) {
+        [[[_ref child:Channel] child:channelId] observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
+            // Get newsest message here
+            NSDictionary *newestMessage = snapshot.value;
+            NSLog(@"newest message is %@",newestMessage);
+            JSQMessage *message = [JSQMessage    messageWithSenderId:newestMessage[SenderId]
+                                                                displayName:newestMessage[SenderName]
+                                                                       text:newestMessage[TexMessage]];
+            [self.messages addObject:message];
+            [self finishReceivingMessageAnimated:YES];
+            
+        } withCancelBlock:^(NSError * _Nonnull error) {
+            NSLog(@"%@", error.localizedDescription);
+        }];
+    }
+  
 }
 
 
@@ -98,7 +131,93 @@
     // [JSQSystemSoundPlayer jsq_playMessageSentSound];
     NSLog(@"did press send button ------");
     
-    NSLog(@"we get tex message here: %@ from sender id: %@ and sender display name is: %@",text,senderId,senderDisplayName);
+//    NSLog(@"we get tex message here: %@ from sender id: %@ and sender display name is: %@",text,senderId,senderDisplayName);
+    // TODO: Start create new channel and add notification for receiver know they have conversation
+   
+    [self writeChannelOnReceiver];
+    [self checkReceiverActiveOrNotToSendNotification];
+   
+    NSDictionary *messageItem = @{
+                                  SenderId:[FIRAuth auth].currentUser.uid,
+                                  SenderName:[[NSUserDefaults standardUserDefaults] objectForKey:UserName],
+                                  TexMessage:text
+                                  };
+    [self sendMessageToChannles:messageItem];
+    
+    [self finishSendingMessageAnimated:YES];
+}
+
+-(void) sendMessageToChannles:(NSDictionary *) messageItem
+{
+    if (channelId) {
+        [[[[_ref child:Channel] child:channelId] childByAutoId]
+         setValue:messageItem withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+             if (error) {
+                 NSLog(@"error with adding document %@",error);
+             }else{
+                 NSLog(@"send message to channel success");
+             }
+         }];
+    }else{
+        channelId = [NSString stringWithFormat:@"%@+%@",[FIRAuth auth].currentUser.uid,self.receiver[UserId]];
+        [[[[_ref child:Channel] child:channelId] childByAutoId]
+         setValue:messageItem withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+             if (error) {
+                 NSLog(@"error with adding document %@",error);
+             }else{
+                 NSLog(@"send message to channel success");
+             }
+         }];
+    }
+   
+}
+
+-(void) writeChannelOnReceiver{
+    if (!writeChanelOnReceiver) {
+        NSLog(@"write channel of receiver ------------------------------------");
+        writeChanelOnReceiver = YES;
+        NSArray *channels = self.receiver[UserChannel];
+        NSLog(@"receiver have channels ----------------- %@",channels);
+        BOOL receiverHaveChannel = NO;
+        for (NSString *channelId in channels) {
+            if ([channelId containsString:[FIRAuth auth].currentUser.uid]) {
+                receiverHaveChannel = YES;
+            }
+        }
+        if (!receiverHaveChannel) {
+            NSLog(@"receiver don't have this channel -----------");
+            // TODO: Continue check if myself have channelid and get it to add to receiver
+            // if myself don't have channelId create one to add
+
+            NSArray *myselfChannels = [ObserveMyself shareInstance].info[UserChannel];
+            NSString *combineId;
+            for (NSString *channleId in myselfChannels) {
+                if ([channleId containsString:self.receiver[UserId]]) {
+                    combineId = channleId;
+                }
+            }
+            if (!combineId) {
+                combineId = [NSString stringWithFormat:@"%@+%@",[FIRAuth auth].currentUser.uid,self.receiver[UserId]];
+            }
+            
+            NSLog(@"finally channel id will be like this --------- %@",combineId);
+            
+            NSDictionary *receiverConversation = @{
+                                                   UserChannel:@[combineId]
+                                                   };
+            [[[_ref child:UserCollection] child:self.receiver[UserId]]
+             updateChildValues:receiverConversation withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+                 if (error) {
+                     NSLog(@"error with adding document %@",error);
+                 }else{
+                     NSLog(@"add user channel id on both receiver and sender");
+                 }
+             }];
+        }
+    }
+}
+
+-(void) checkReceiverActiveOrNotToSendNotification{
     if (!receiverStatus) {
         NSLog(@"receiver inactive ------");
         NSDictionary *notification = @{ReceiverId:self.receiver[UserId],
@@ -117,16 +236,9 @@
     }else{
         NSLog(@"receiver active");
     }
-    
-    JSQMessage *message = [[JSQMessage alloc] initWithSenderId:senderId
-                                             senderDisplayName:senderDisplayName
-                                                          date:date
-                                                          text:text];
-    
-    [self.messages addObject:message];
-    
-    [self finishSendingMessageAnimated:YES];
 }
+
+
 - (void)didPressAccessoryButton:(UIButton *)sender
 {
     [self.inputToolbar.contentView.textView resignFirstResponder];

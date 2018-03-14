@@ -122,61 +122,32 @@ NSString *const kVerifyCode = @"verifyCode";
                                   else
                                   {
                                       // User successfully signed in. Get user data from the FIRUser object
-                                      // ...
-                                      
-                                      NSString *userName = [[NSUserDefaults standardUserDefaults] objectForKey:UserName];
-                                      NSString *userPhone = [[NSUserDefaults standardUserDefaults] objectForKey:UserPhone];
-                                      
-                                      NSDictionary *userInfo = @{UserName: userName,
-                                                                 UserPhone:userPhone
-                                                                 };
-                                      
-                                      [[[_ref child:UserCollection] child:user.uid]
-                                       setValue:userInfo withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
-                                           if (error) {
-                                               NSLog(@"error with adding document %@",error);
-                                           }else{
-                                               NSLog(@"add data success");
-                                           }
-                                           
-                                       }];
-                                      
-                                      
+                                      [self updateUserData:user];
                                       [self goToMainView];
-                                      
-
-//                                      FIRFirestore *defaultFirestore = [FIRFirestore firestore];
-//                                      FIRDocumentReference *docRef= [[defaultFirestore collectionWithPath:UserCollectionData] documentWithPath:user.uid];
-////                                      NSLog(@"user uid is --- %@",user.uid);
-//                                      [docRef getDocumentWithCompletion:^(FIRDocumentSnapshot *snapshot, NSError *error) {
-////                                          NSLog(@"snap shot data get is %@",snapshot);
-//                                          if (snapshot.exists) {
-////                                              NSLog(@"Document data: %@", snapshot.data);
-//                                              [self updateUserName];
-//                                              [self goToMainView];
-//                                          } else {
-////                                              NSLog(@"Document does not exist");
-//                                              [self letUserSetProfile];
-//                                          }
-//                                      }];
-                                      
-                                    
-                                      
                                   }
                                  
                               }];
 }
 
--(void) letUserSetProfile
+-(void) updateUserData:(FIRUser *) user
 {
-//    DriverRegister *userProfile = [self.storyboard instantiateViewControllerWithIdentifier:@"DriverRegister"];
-//    userProfile.userRegistedType = self.userRegistedType;
-//    if ([self.userRegistedType isEqualToString:TypeUser]) {
-//        [userProfile setForUserProfile];
-//    }else{
-//        [userProfile setForDriverProfile];
-//    }
-//    [self.navigationController pushViewController:userProfile animated:YES];
+    NSString *userName = [[NSUserDefaults standardUserDefaults] objectForKey:UserName];
+    NSString *userPhone = [[NSUserDefaults standardUserDefaults] objectForKey:UserPhone];
+    NSDictionary *userInfo = @{UserName: userName,
+                               UserPhone:userPhone,
+                               UserId:user.uid
+                               };
+    
+    [[[[[FIRDatabase database] reference] child:UserCollection] child:user.uid]
+     updateChildValues:userInfo withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+         if (error) {
+             NSLog(@"error with adding document %@",error);
+         }else{
+             NSLog(@"add user info success");
+         }
+         
+     }];
+    
 }
 
 -(void) goToMainView

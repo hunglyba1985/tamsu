@@ -173,9 +173,37 @@ NSString *const kRegisterEmail = @"register email";
                                password:password
                              completion:^(FIRUser *_Nullable user, NSError *_Nullable error) {
                                  // ...
-                                 NSLog(@"register success with user %@",user);
-                                 [self goToMainView];
+                                 if (error) {
+                                     NSLog(@"register with email error");
+                                 }else{
+                                     NSLog(@"register success with user %@",user);
+                                     [self updateUserData:user];
+                                     [self goToMainView];
+                                 }
                              }];
+}
+
+
+-(void) updateUserData:(FIRUser *) user
+{
+    NSString *userName = [[NSUserDefaults standardUserDefaults] objectForKey:UserName];
+    NSString *userPhone = [[NSUserDefaults standardUserDefaults] objectForKey:UserPhone];
+    
+    NSDictionary *userInfo = @{UserName: userName,
+                               UserPhone:userPhone,
+                               UserId:user.uid
+                               };
+    
+    [[[[[FIRDatabase database] reference] child:UserCollection] child:user.uid]
+     updateChildValues:userInfo withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+         if (error) {
+             NSLog(@"error with adding document %@",error);
+         }else{
+             NSLog(@"add user info success");
+         }
+         
+     }];
+    
 }
 
 -(void) goToMainView

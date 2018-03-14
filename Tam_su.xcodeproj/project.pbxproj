@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		04606E3A20567BDC00497B3B /* ChatViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 04606E3920567BDC00497B3B /* ChatViewController.m */; };
+		04606E3F2058D89900497B3B /* ObserveMyself.m in Sources */ = {isa = PBXBuildFile; fileRef = 04606E3E2058D89900497B3B /* ObserveMyself.m */; };
 		04897FF5204FA71D00EC4A9B /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 04897FF4204FA71D00EC4A9B /* AppDelegate.m */; };
 		04897FFB204FA71D00EC4A9B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 04897FF9204FA71D00EC4A9B /* Main.storyboard */; };
 		04897FFD204FA71D00EC4A9B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04897FFC204FA71D00EC4A9B /* Assets.xcassets */; };
@@ -47,6 +48,8 @@
 		01DCB2A1FB4E837D6BC84E78 /* Pods-Tam_su.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Tam_su.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Tam_su/Pods-Tam_su.debug.xcconfig"; sourceTree = "<group>"; };
 		04606E3820567BDC00497B3B /* ChatViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChatViewController.h; sourceTree = "<group>"; };
 		04606E3920567BDC00497B3B /* ChatViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ChatViewController.m; sourceTree = "<group>"; };
+		04606E3D2058D89900497B3B /* ObserveMyself.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObserveMyself.h; sourceTree = "<group>"; };
+		04606E3E2058D89900497B3B /* ObserveMyself.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObserveMyself.m; sourceTree = "<group>"; };
 		04897FF0204FA71D00EC4A9B /* Tam_su.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tam_su.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		04897FF3204FA71D00EC4A9B /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		04897FF4204FA71D00EC4A9B /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -210,6 +213,8 @@
 				0489803E204FEF8300EC4A9B /* TabBarController.m */,
 				04606E3820567BDC00497B3B /* ChatViewController.h */,
 				04606E3920567BDC00497B3B /* ChatViewController.m */,
+				04606E3D2058D89900497B3B /* ObserveMyself.h */,
+				04606E3E2058D89900497B3B /* ObserveMyself.m */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -532,6 +537,7 @@
 				0489803F204FEF8300EC4A9B /* TabBarController.m in Sources */,
 				04898031204FD16500EC4A9B /* VerifyCode.m in Sources */,
 				0489802E204FD15B00EC4A9B /* UserRegister.m in Sources */,
+				04606E3F2058D89900497B3B /* ObserveMyself.m in Sources */,
 				04898003204FA71D00EC4A9B /* main.m in Sources */,
 				04898036204FD68A00EC4A9B /* MainViewController.m in Sources */,
 				04897FF5204FA71D00EC4A9B /* AppDelegate.m in Sources */,

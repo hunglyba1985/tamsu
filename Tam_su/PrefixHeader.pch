@@ -19,6 +19,7 @@
 @import FirebaseDatabase;
 @import FirebaseCore;
 #import "XLForm.h"
+#import "ObserveMyself.h"
 
 
 #endif /* PrefixHeader_pch */

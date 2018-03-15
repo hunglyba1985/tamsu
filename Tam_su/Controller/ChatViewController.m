@@ -80,10 +80,16 @@
 -(void) showNotificationOnApp:(NSNotification *) notification
 {
     NSDictionary *notificationInfo = notification.userInfo;
-    if (![notificationInfo[SenderId] isEqualToString:self.receiver[UserId]]) {
-        NSString *alertStr = [NSString stringWithFormat:@"%@: %@",notificationInfo[SenderName],notificationInfo[TexMessage]];
-        [JDStatusBarNotification showWithStatus:alertStr dismissAfter:2 styleName:JDStatusBarStyleSuccess];
+    NSLog(@"myself id is %@",[FIRAuth auth].currentUser.uid);
+    if (![notificationInfo[SenderId] isEqualToString:[FIRAuth auth].currentUser.uid]) {
+        NSLog(@"sender is not myself");
+        if (![notificationInfo[SenderId] isEqualToString:self.receiver[UserId]] ) {
+            NSLog(@"sender is not receiver");
+            NSString *alertStr = [NSString stringWithFormat:@"%@: %@",notificationInfo[SenderName],notificationInfo[TexMessage]];
+            [JDStatusBarNotification showWithStatus:alertStr dismissAfter:2 styleName:JDStatusBarStyleSuccess];
+        }
     }
+   
    
 }
 

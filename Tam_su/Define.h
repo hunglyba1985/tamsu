@@ -41,6 +41,10 @@
 #define SenderId @"senderId"
 #define ReceiverId @"receiverId"
 #define SenderName @"senderName"
+#define NotificationTypeMessage @"new message"
+#define NotificationCategory @"gcm.notification.category"
+#define NotificationSenderId @"gcm.notification.senderId"
+
 
 
 #endif /* Define_h */

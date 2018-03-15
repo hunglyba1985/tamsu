@@ -213,7 +213,7 @@
     [[[_ref child:Channel] child:channelId] observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
         // Get newsest message here
         NSDictionary *newestMessage = snapshot.value;
-        NSLog(@"newest message is %@",newestMessage);
+//        NSLog(@"newest message is %@",newestMessage);
         JSQMessage *message = [JSQMessage    messageWithSenderId:newestMessage[SenderId]
                                                      displayName:newestMessage[SenderName]
                                                             text:newestMessage[TexMessage]];
@@ -274,7 +274,7 @@
     }
 }
 
-// TODO: Check receiver is active or not to send notification
+// TODO: Check receiver is active or not to SEND NOTIFICATION
 -(void) checkReceiverActiveOrNotToSendNotification{
     if (!receiverStatus) {
         NSLog(@"receiver inactive ------");

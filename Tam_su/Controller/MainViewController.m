@@ -31,10 +31,18 @@
     [self showListAllFriends];
 }
 
+-(void) viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(openChatView:) name:NotificationTypeMessage object:nil];
+    
+}
+
 -(void) viewWillDisappear:(BOOL)animated{
     [super viewWillDisappear:animated];
     NSLog(@"main view will disappear");
     [self.ref removeAllObservers];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+
 }
 
 -(void) uploadUserNotificationToken {
@@ -50,6 +58,15 @@
              }
          }];
     }
+}
+
+-(void) openChatView:(NSNotification *) notification{
+    NSLog(@"start open chat view for user when get notification %@",notification.userInfo);
+    NSString *senderId = notification.userInfo[NotificationSenderId];
+    NSDictionary *receiver = @{
+                             UserId:senderId,
+                             };
+    [self showChatViewController:receiver];
 }
 
 -(void) getAllUserActive{

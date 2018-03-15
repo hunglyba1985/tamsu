@@ -12,6 +12,7 @@
 @interface ObserveMyself : NSObject
 @property (strong, nonatomic) FIRDatabaseReference *ref;
 @property (strong, nonatomic) NSDictionary *info;
+@property (strong, nonatomic) NSMutableArray *arrayObserveConversation;
 +(ObserveMyself *) shareInstance;
 -(void) startObserve;
 

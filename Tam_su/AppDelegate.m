@@ -241,6 +241,12 @@ withCompletionHandler:(void(^)())completionHandler {
     
     // Print full message.
     NSLog(@" userNotificationCenter didReceiveNotificationResponse %@", userInfo);
+    NSLog(@"get notification category is %@",userInfo[NotificationCategory]);
+    NSLog(@"get notification sender id %@",userInfo[NotificationSenderId]);
+    if ([userInfo[NotificationCategory] isEqualToString:NotificationTypeMessage]) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:NotificationTypeMessage object:nil userInfo:userInfo];
+    }
+    
     
     
     completionHandler();

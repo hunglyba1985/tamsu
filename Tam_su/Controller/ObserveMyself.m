@@ -26,6 +26,7 @@ static ObserveMyself *_shareClient;
     self = [super init];
     if (self) {
         self.ref = [[FIRDatabase database] reference];
+        self.arrayObserveConversation = [NSMutableArray new];
     }
     
     return self;
@@ -37,10 +38,23 @@ static ObserveMyself *_shareClient;
         // Get user value
        self.info = snapshot.value;
         NSLog(@"myself information is %@",self.info);
-        NSArray *channels = self.info[UserChannel];
-        NSLog(@"myself channels is %@",channels);
-        for (NSString *channelId in channels) {
-            [self observeConversationOnChannel:channelId];
+        NSArray *newestChannels = self.info[UserChannel];
+        NSLog(@"myself channels is %@",newestChannels);
+        // TODO: START OBSERVE ALL CONVERSATION
+        if (newestChannels.count > self.arrayObserveConversation.count) {
+            NSMutableSet *big = [NSMutableSet setWithArray:newestChannels];
+            NSMutableSet *little = [NSMutableSet setWithArray:self.arrayObserveConversation];
+            [big minusSet:little];
+            NSArray *result = [big allObjects];
+            NSLog(@"different channels is %@",result);
+            [self.arrayObserveConversation addObjectsFromArray:result];
+            for (NSString *channleId in result) {
+                [self observeConversationOnChannel:channleId];
+            }
+            
+            
+        }else{
+            NSLog(@"don't have new channle then leave it");
         }
         
         // ...

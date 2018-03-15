@@ -274,6 +274,7 @@
     }
 }
 
+// TODO: Check receiver is active or not to send notification
 -(void) checkReceiverActiveOrNotToSendNotification{
     if (!receiverStatus) {
         NSLog(@"receiver inactive ------");

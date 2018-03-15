@@ -14,6 +14,8 @@ target 'Tam_su' do
   pod 'JSQMessagesViewController'
   pod 'Firebase/Storage'
   pod 'XLForm'
+  pod 'JDStatusBarNotification'
+  
 
   
   target 'Tam_suTests' do

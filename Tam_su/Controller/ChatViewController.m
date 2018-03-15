@@ -52,7 +52,8 @@
 
 -(void) viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
-    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showNotificationOnApp:) name:NotificationHaveMessageOnApp object:nil];
+
 }
 
 -(void) viewDidAppear:(BOOL)animated{
@@ -71,7 +72,21 @@
     [super viewWillDisappear:animated];
     // TODO: delete all messages on this channel when user leave this view
     [self deleteAllMessageOnChannle];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+
 }
+
+
+-(void) showNotificationOnApp:(NSNotification *) notification
+{
+    NSDictionary *notificationInfo = notification.userInfo;
+    if (![notificationInfo[SenderId] isEqualToString:self.receiver[UserId]]) {
+        NSString *alertStr = [NSString stringWithFormat:@"%@: %@",notificationInfo[SenderName],notificationInfo[TexMessage]];
+        [JDStatusBarNotification showWithStatus:alertStr dismissAfter:2 styleName:JDStatusBarStyleSuccess];
+    }
+   
+}
+
 
 -(void) deleteAllMessageOnChannle{
     if (channelId) {

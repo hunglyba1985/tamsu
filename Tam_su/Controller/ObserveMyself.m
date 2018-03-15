@@ -68,7 +68,7 @@ static ObserveMyself *_shareClient;
         // Get newsest message here
         NSDictionary *newestMessage = snapshot.value;
         NSLog(@"newest message is %@",newestMessage);
-       
+        [[NSNotificationCenter defaultCenter] postNotificationName:NotificationHaveMessageOnApp object:nil userInfo:newestMessage];
         // ...
     } withCancelBlock:^(NSError * _Nonnull error) {
         NSLog(@"%@", error.localizedDescription);

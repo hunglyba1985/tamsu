@@ -44,7 +44,7 @@
 #define NotificationTypeMessage @"new message"
 #define NotificationCategory @"gcm.notification.category"
 #define NotificationSenderId @"gcm.notification.senderId"
-
+#define NotificationHaveMessageOnApp @"notification have message on app"
 
 
 #endif /* Define_h */

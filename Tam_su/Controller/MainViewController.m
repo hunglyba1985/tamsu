@@ -34,7 +34,8 @@
 -(void) viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(openChatView:) name:NotificationTypeMessage object:nil];
-    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showNotificationOnApp:) name:NotificationHaveMessageOnApp object:nil];
+
 }
 
 -(void) viewWillDisappear:(BOOL)animated{
@@ -42,7 +43,6 @@
     NSLog(@"main view will disappear");
     [self.ref removeAllObservers];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-
 }
 
 -(void) uploadUserNotificationToken {
@@ -59,7 +59,15 @@
          }];
     }
 }
+-(void) showNotificationOnApp:(NSNotification *) notification
+{
+    NSDictionary *notificationInfo = notification.userInfo;
+    NSString *alertStr = [NSString stringWithFormat:@"%@: %@",notificationInfo[SenderName],notificationInfo[TexMessage]];
+    [JDStatusBarNotification showWithStatus:alertStr dismissAfter:2 styleName:JDStatusBarStyleSuccess];
+    
+}
 
+// TODO: OPEN CHAT VIEW FROM NOTIFICAITON
 -(void) openChatView:(NSNotification *) notification{
     NSLog(@"start open chat view for user when get notification %@",notification.userInfo);
     NSString *senderId = notification.userInfo[NotificationSenderId];

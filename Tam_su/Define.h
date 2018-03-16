@@ -25,6 +25,7 @@
 #define UserCollection @"users"
 #define Notification @"notification"
 #define Channel @"channels"
+#define MessageCollection @"messages"
 
 
 // Bool value
@@ -35,6 +36,8 @@
 // Conversation define
 #define TexMessage @"texMessage"
 #define MessageId @"messageId"
+#define TypingIndicate @"typingIndicator"
+
 
 
 // Notification define

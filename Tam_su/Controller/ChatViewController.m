@@ -7,6 +7,7 @@
 //
 
 #import "ChatViewController.h"
+#import "JSQMessagesAvatarImageFactory.h"
 
 @interface ChatViewController ()
 {
@@ -14,6 +15,8 @@
     BOOL writeChanelOnReceiver;
     NSString *channelId;
     BOOL observeConversationDone;
+    BOOL isTyping;
+    NSDictionary *chaterIcon;
 }
 @property (nonatomic,strong) NSMutableArray *messages;
 @property (nonatomic,strong) NSMutableArray *tempMessages;
@@ -47,8 +50,11 @@
     }
     [self observeStatusOfReceiver];
     [self startObserveConversation];
+    [self setAvartaForChater];
     
 }
+
+
 
 -(void) viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
@@ -76,6 +82,21 @@
 
 }
 
+-(void) setAvartaForChater{
+    
+    UIImage* circuleSenderImage = [JSQMessagesAvatarImageFactory  circularAvatarImage:[UIImage imageNamed:@"menIcon"] withDiameter:kJSQMessagesCollectionViewAvatarSizeDefault];
+    UIImage* circuleReceiverImage = [JSQMessagesAvatarImageFactory  circularAvatarImage:[UIImage imageNamed:@"womenIcon"] withDiameter:kJSQMessagesCollectionViewAvatarSizeDefault];
+    
+    JSQMessagesAvatarImage *senderImage = [JSQMessagesAvatarImage avatarWithImage:circuleSenderImage];
+    JSQMessagesAvatarImage *receiverImage = [JSQMessagesAvatarImage avatarWithImage:circuleReceiverImage];
+    
+    chaterIcon = @{
+                   [FIRAuth auth].currentUser.uid:senderImage,
+                   self.receiver[UserId]:receiverImage,
+                   };
+    
+    
+}
 
 -(void) showNotificationOnApp:(NSNotification *) notification
 {
@@ -107,6 +128,26 @@
         
     }
 }
+// TODO: OBSERVE USER TYPING TO SHOW FOR RECEIVER
+-(void) observeUserTypingToShowReceiver{
+    if (channelId) {
+        [[[[[[self.ref child:Channel] child:channelId] child:TypingIndicate] queryOrderedByValue]
+          queryEqualToValue:@YES]
+         observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
+             NSLog(@"observe User Typing To Show Receiver");
+             // You're the only typing, don't show the indicator
+             if (snapshot.childrenCount == 1 && isTyping) {
+                 return;
+             }
+             
+             // Are there other typing?
+             self.showTypingIndicator = snapshot.childrenCount > 0;
+             [self scrollToBottomAnimated:YES];
+             
+         }];
+    }
+    
+}
 
 
 // TODO: Observe Status of Receiver
@@ -126,7 +167,7 @@
     }];
 }
 
-// TODO: Observe Conversation
+// TODO: GET MESSAGES FROM FIREBASE
 -(void) startObserveConversation{
     
     NSArray *listChannels = [ObserveMyself shareInstance].info[UserChannel];
@@ -140,7 +181,7 @@
     }
     if (channelId) {
         observeConversationDone = YES;
-        [[[_ref child:Channel] child:channelId] observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
+        [[[[_ref child:Channel] child:channelId] child:MessageCollection] observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
             // Get newsest message here
             NSDictionary *newestMessage = snapshot.value;
 //            NSLog(@"newest message is %@",newestMessage);
@@ -150,14 +191,25 @@
             [self.messages addObject:message];
             [self.tempMessages addObject:newestMessage];
             [self finishReceivingMessageAnimated:YES];
-            
+            [self deleteMessagesWhenItLargerThanFive];
         } withCancelBlock:^(NSError * _Nonnull error) {
             NSLog(@"%@", error.localizedDescription);
         }];
+        [self observeUserTypingToShowReceiver];
     }else{
         NSLog(@"don't get channel id from myself because we can't get it");
     }
   
+}
+
+-(void) deleteMessagesWhenItLargerThanFive{
+    if (self.messages.count > 7) {
+        NSLog(@"start delete message when it larger than 5");
+        for (int i = 0; i < (self.messages.count - 5); i++) {
+            [self.messages removeObjectAtIndex:i];
+        }
+        [self finishSendingMessageAnimated:YES];
+    }
 }
 
 
@@ -176,7 +228,6 @@
      *  3. Call `finishSendingMessage`
      */
     
-    // [JSQSystemSoundPlayer jsq_playMessageSentSound];
     NSLog(@"did press send button ------");
     
 //    NSLog(@"we get tex message here: %@ from sender id: %@ and sender display name is: %@",text,senderId,senderDisplayName);
@@ -187,20 +238,23 @@
    
     NSDictionary *messageItem = @{
                                   SenderId:[FIRAuth auth].currentUser.uid,
-                                  SenderName:[[NSUserDefaults standardUserDefaults] objectForKey:UserName],
+                                  SenderName:[ObserveMyself shareInstance].info[UserName],
                                   TexMessage:text,
                                   MessageId:[[NSUUID UUID] UUIDString]
                                   };
 
     [self sendMessageToChannles:messageItem];
+    [JSQSystemSoundPlayer jsq_playMessageSentSound];
     [self finishSendingMessageAnimated:YES];
+    isTyping = NO;
+    [self sendUserTypingStatusToFirebase:isTyping];
 }
 
 // TODO: Send message to channel firebase
 -(void) sendMessageToChannles:(NSDictionary *) messageItem
 {
     if (channelId) {
-        [[[[_ref child:Channel] child:channelId] child:messageItem[MessageId]]
+        [[[[[_ref child:Channel] child:channelId] child:MessageCollection] child:messageItem[MessageId]]
          setValue:messageItem withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
              if (error) {
                  NSLog(@"error with adding document %@",error);
@@ -214,7 +268,7 @@
          }];
     }else{
         channelId = [NSString stringWithFormat:@"%@+%@",[FIRAuth auth].currentUser.uid,self.receiver[UserId]];
-        [[[[_ref child:Channel] child:channelId] child:messageItem[MessageId]]
+        [[[[[_ref child:Channel] child:channelId] child:MessageCollection] child:messageItem[MessageId]]
          setValue:messageItem withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
              if (error) {
                  NSLog(@"error with adding document %@",error);
@@ -231,7 +285,7 @@
 }
 
 -(void) observeConversationIfFirstTimeNotWork{
-    [[[_ref child:Channel] child:channelId] observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
+    [[[[_ref child:Channel] child:channelId] child:MessageCollection] observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
         // Get newsest message here
         NSDictionary *newestMessage = snapshot.value;
 //        NSLog(@"newest message is %@",newestMessage);
@@ -245,6 +299,7 @@
     } withCancelBlock:^(NSError * _Nonnull error) {
         NSLog(@"%@", error.localizedDescription);
     }];
+    [self observeUserTypingToShowReceiver];
 }
 
 -(void) writeChannelOnReceiver{
@@ -301,7 +356,7 @@
         NSLog(@"receiver inactive ------");
         NSDictionary *notification = @{ReceiverId:self.receiver[UserId],
                                        SenderId:[FIRAuth auth].currentUser.uid,
-                                       SenderName:[[NSUserDefaults standardUserDefaults] objectForKey:UserName]
+                                       SenderName:[ObserveMyself shareInstance].info[UserName]
                                        };
         [[[_ref child:Notification] childByAutoId]
          updateChildValues:notification withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
@@ -326,6 +381,31 @@
     
 }
 
+#pragma mark TextView Delegate To Check User typing
+-(void) textViewDidChange:(UITextView *)textView{
+    [super textViewDidChange:textView];
+    
+    NSLog(@"if text view did change %@",textView.text);
+    isTyping = ![textView.text isEqualToString:@""];
+    [self sendUserTypingStatusToFirebase:isTyping];
+}
+
+-(void) sendUserTypingStatusToFirebase:(BOOL) status{
+    
+    if (channelId) {
+        FIRDatabaseReference *userIsTypingRef =[[[[_ref child:Channel] child:channelId] child:TypingIndicate] child:[FIRAuth auth].currentUser.uid];
+        [userIsTypingRef setValue:[NSNumber numberWithBool:status] withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+            if (error) {
+                NSLog(@"send user typing status to firebase error");
+            }else{
+                NSLog(@"send user typing status to firebase success");
+            }
+        }];
+        
+    }
+   
+}
+
 #pragma mark - JSQMessages CollectionView DataSource
 
 - (NSString *)senderId {
@@ -333,8 +413,12 @@
 }
 
 - (NSString *)senderDisplayName {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:UserName];
-;
+    if ([ObserveMyself shareInstance].info[UserName]) {
+        return [ObserveMyself shareInstance].info[UserName];
+    }else{
+        return @"";
+    }
+
 }
 
 - (id<JSQMessageData>)collectionView:(JSQMessagesCollectionView *)collectionView messageDataForItemAtIndexPath:(NSIndexPath *)indexPath
@@ -389,21 +473,9 @@
      *  Override the defaults in `viewDidLoad`
      */
     
-//    JSQMessage *message = [self.messages objectAtIndex:indexPath.item];
-//
-//    if ([message.senderId isEqualToString:self.senderId]) {
-//        if (![NSUserDefaults outgoingAvatarSetting]) {
-//            return nil;
-//        }
-//    }
-//    else {
-//        if (![NSUserDefaults incomingAvatarSetting]) {
-//            return nil;
-//        }
-//    }
+    JSQMessage *message = [self.messages objectAtIndex:indexPath.item];
     
-    
-    return nil;                 // [self.demoData.avatars objectForKey:message.senderId];
+    return [chaterIcon objectForKey:message.senderId];                 // [self.demoData.avatars objectForKey:message.senderId];
 }
 
 - (NSAttributedString *)collectionView:(JSQMessagesCollectionView *)collectionView attributedTextForCellTopLabelAtIndexPath:(NSIndexPath *)indexPath

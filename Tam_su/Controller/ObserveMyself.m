@@ -64,7 +64,7 @@ static ObserveMyself *_shareClient;
 }
 -(void) observeConversationOnChannel:(NSString*) channelId{
     NSLog(@"observeConversationOnChannel with id %@",channelId);
-    [[[_ref child:Channel] child:channelId] observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
+    [[[[_ref child:Channel] child:channelId] child:MessageCollection] observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
         // Get newsest message here
         NSDictionary *newestMessage = snapshot.value;
         NSLog(@"newest message is %@",newestMessage);

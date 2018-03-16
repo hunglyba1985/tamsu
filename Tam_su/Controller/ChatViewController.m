@@ -7,6 +7,7 @@
 //
 
 #import "ChatViewController.h"
+#import "JSQMessagesAvatarImageFactory.h"
 
 @interface ChatViewController ()
 {
@@ -15,6 +16,7 @@
     NSString *channelId;
     BOOL observeConversationDone;
     BOOL isTyping;
+    NSDictionary *chaterIcon;
 }
 @property (nonatomic,strong) NSMutableArray *messages;
 @property (nonatomic,strong) NSMutableArray *tempMessages;
@@ -48,8 +50,11 @@
     }
     [self observeStatusOfReceiver];
     [self startObserveConversation];
+    [self setAvartaForChater];
     
 }
+
+
 
 -(void) viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
@@ -77,6 +82,21 @@
 
 }
 
+-(void) setAvartaForChater{
+    
+    UIImage* circuleSenderImage = [JSQMessagesAvatarImageFactory  circularAvatarImage:[UIImage imageNamed:@"menIcon"] withDiameter:kJSQMessagesCollectionViewAvatarSizeDefault];
+    UIImage* circuleReceiverImage = [JSQMessagesAvatarImageFactory  circularAvatarImage:[UIImage imageNamed:@"womenIcon"] withDiameter:kJSQMessagesCollectionViewAvatarSizeDefault];
+    
+    JSQMessagesAvatarImage *senderImage = [JSQMessagesAvatarImage avatarWithImage:circuleSenderImage];
+    JSQMessagesAvatarImage *receiverImage = [JSQMessagesAvatarImage avatarWithImage:circuleReceiverImage];
+    
+    chaterIcon = @{
+                   [FIRAuth auth].currentUser.uid:senderImage,
+                   self.receiver[UserId]:receiverImage,
+                   };
+    
+    
+}
 
 -(void) showNotificationOnApp:(NSNotification *) notification
 {
@@ -147,7 +167,7 @@
     }];
 }
 
-// TODO: Observe Conversation
+// TODO: GET MESSAGES FROM FIREBASE
 -(void) startObserveConversation{
     
     NSArray *listChannels = [ObserveMyself shareInstance].info[UserChannel];
@@ -171,7 +191,7 @@
             [self.messages addObject:message];
             [self.tempMessages addObject:newestMessage];
             [self finishReceivingMessageAnimated:YES];
-            
+            [self deleteMessagesWhenItLargerThanFive];
         } withCancelBlock:^(NSError * _Nonnull error) {
             NSLog(@"%@", error.localizedDescription);
         }];
@@ -180,6 +200,16 @@
         NSLog(@"don't get channel id from myself because we can't get it");
     }
   
+}
+
+-(void) deleteMessagesWhenItLargerThanFive{
+    if (self.messages.count > 7) {
+        NSLog(@"start delete message when it larger than 5");
+        for (int i = 0; i < (self.messages.count - 5); i++) {
+            [self.messages removeObjectAtIndex:i];
+        }
+        [self finishSendingMessageAnimated:YES];
+    }
 }
 
 
@@ -443,21 +473,9 @@
      *  Override the defaults in `viewDidLoad`
      */
     
-//    JSQMessage *message = [self.messages objectAtIndex:indexPath.item];
-//
-//    if ([message.senderId isEqualToString:self.senderId]) {
-//        if (![NSUserDefaults outgoingAvatarSetting]) {
-//            return nil;
-//        }
-//    }
-//    else {
-//        if (![NSUserDefaults incomingAvatarSetting]) {
-//            return nil;
-//        }
-//    }
+    JSQMessage *message = [self.messages objectAtIndex:indexPath.item];
     
-    
-    return nil;                 // [self.demoData.avatars objectForKey:message.senderId];
+    return [chaterIcon objectForKey:message.senderId];                 // [self.demoData.avatars objectForKey:message.senderId];
 }
 
 - (NSAttributedString *)collectionView:(JSQMessagesCollectionView *)collectionView attributedTextForCellTopLabelAtIndexPath:(NSIndexPath *)indexPath

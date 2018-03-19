@@ -8,8 +8,9 @@
 
 #import "ChatViewController.h"
 #import "JSQMessagesAvatarImageFactory.h"
+@import Photos;
 
-@interface ChatViewController ()
+@interface ChatViewController () <UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 {
     BOOL receiverStatus;
     BOOL writeChanelOnReceiver;
@@ -21,6 +22,7 @@
 @property (nonatomic,strong) NSMutableArray *messages;
 @property (nonatomic,strong) NSMutableArray *tempMessages;
 @property (strong, nonatomic) FIRDatabaseReference *ref;
+@property (strong, nonatomic) FIRStorageReference *storageRef;
 
 @end
 
@@ -42,6 +44,10 @@
 //    self.collectionView.accessoryDelegate = self;
     
     self.ref = [[FIRDatabase database] reference];
+    
+    // [START configurestorage]
+    self.storageRef = [[FIRStorage storage] reference];
+    // [END configurestorage]
 
     if ([self.receiver[UserActive] isEqualToString:Active]) {
         receiverStatus = YES;
@@ -77,7 +83,7 @@
 -(void) viewWillDisappear:(BOOL)animated{
     [super viewWillDisappear:animated];
     // TODO: delete all messages on this channel when user leave this view
-    [self deleteAllMessageOnChannle];
+//    [self deleteAllMessageOnChannle];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 
 }
@@ -372,14 +378,92 @@
     }
 }
 
-
+#pragma mark Handle Send Image or Video
 - (void)didPressAccessoryButton:(UIButton *)sender
 {
     [self.inputToolbar.contentView.textView resignFirstResponder];
-    
     NSLog(@"did press accessory button");
-    
+    [self openCameraOrLibraryToGetImage];
 }
+
+-(void) openCameraOrLibraryToGetImage{
+    UIImagePickerController * picker = [[UIImagePickerController alloc] init];
+    picker.delegate = self;
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+        picker.sourceType = UIImagePickerControllerSourceTypeCamera;
+    } else {
+        picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    }
+    
+    [self presentViewController:picker animated:YES completion:NULL];
+}
+
+- (void)imagePickerController:(UIImagePickerController *)picker
+didFinishPickingMediaWithInfo:(NSDictionary *)info {
+    [picker dismissViewControllerAnimated:YES completion:NULL];
+    
+//    _urlTextView.text = @"Beginning Upload";
+    NSURL *referenceUrl = info[UIImagePickerControllerReferenceURL];
+    // if it's a photo from the library, not an image from the camera
+    if (referenceUrl) {
+        PHFetchResult* assets = [PHAsset fetchAssetsWithALAssetURLs:@[referenceUrl] options:nil];
+        PHAsset *asset = assets.firstObject;
+        [asset requestContentEditingInputWithOptions:nil
+                                   completionHandler:^(PHContentEditingInput *contentEditingInput,
+                                                       NSDictionary *info) {
+                                       NSURL *imageFile = contentEditingInput.fullSizeImageURL;
+                                       NSString *filePath =
+                                       [NSString stringWithFormat:@"%@/%lld/%@",
+                                        [FIRAuth auth].currentUser.uid,
+                                        (long long)([NSDate date].timeIntervalSince1970 * 1000.0),
+                                        imageFile.lastPathComponent];
+                                       // [START uploadimage]
+                                       [[_storageRef child:filePath]
+                                        putFile:imageFile metadata:nil
+                                        completion:^(FIRStorageMetadata *metadata, NSError *error) {
+                                            if (error) {
+                                                NSLog(@"Error uploading: %@", error);
+//                                                _urlTextView.text = @"Upload Failed";
+                                                return;
+                                            }
+                                            [self uploadSuccess:metadata storagePath:filePath];
+                                        }];
+                                       // [END uploadimage]
+                                   }];
+        
+    } else {
+        UIImage *image = info[UIImagePickerControllerOriginalImage];
+        NSData *imageData = UIImageJPEGRepresentation(image, 0.8);
+        NSString *imagePath =
+        [NSString stringWithFormat:@"%@/%lld.jpg",
+         [FIRAuth auth].currentUser.uid,
+         (long long)([NSDate date].timeIntervalSince1970 * 1000.0)];
+        FIRStorageMetadata *metadata = [FIRStorageMetadata new];
+        metadata.contentType = @"image/jpeg";
+        [[_storageRef child:imagePath] putData:imageData metadata:metadata
+                                    completion:^(FIRStorageMetadata * _Nullable metadata, NSError * _Nullable error) {
+                                        if (error) {
+                                            NSLog(@"Error uploading: %@", error);
+//                                            _urlTextView.text = @"Upload Failed";
+                                            return;
+                                        }
+                                        [self uploadSuccess:metadata storagePath:imagePath];
+                                    }];
+    }
+}
+
+- (void)uploadSuccess:(FIRStorageMetadata *) metadata storagePath: (NSString *) storagePath {
+    NSLog(@"Upload Succeeded! %@",metadata.downloadURL);
+//    _urlTextView.text = metadata.downloadURL.absoluteString;
+    [[NSUserDefaults standardUserDefaults] setObject:storagePath forKey:@"storagePath"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+//    _downloadPicButton.enabled = YES;
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    [picker dismissViewControllerAnimated:YES completion:NULL];
+}
+
 
 #pragma mark TextView Delegate To Check User typing
 -(void) textViewDidChange:(UITextView *)textView{

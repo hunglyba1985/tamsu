@@ -15,7 +15,7 @@ target 'Tam_su' do
   pod 'Firebase/Storage'
   pod 'XLForm'
   pod 'JDStatusBarNotification'
-  
+  pod 'SDWebImage', '~> 4.0'
 
   
   target 'Tam_suTests' do

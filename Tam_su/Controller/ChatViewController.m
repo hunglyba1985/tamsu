@@ -10,6 +10,8 @@
 #import "JSQMessagesAvatarImageFactory.h"
 @import Photos;
 
+NSString *const imageURLNotSetKey = @"NOTSET";
+
 @interface ChatViewController () <UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 {
     BOOL receiverStatus;
@@ -21,6 +23,7 @@
 }
 @property (nonatomic,strong) NSMutableArray *messages;
 @property (nonatomic,strong) NSMutableArray *tempMessages;
+@property (nonatomic,strong) NSMutableDictionary *photoMessageMap;
 @property (strong, nonatomic) FIRDatabaseReference *ref;
 @property (strong, nonatomic) FIRStorageReference *storageRef;
 
@@ -37,6 +40,7 @@
      */
     _messages = [NSMutableArray new];
     _tempMessages = [NSMutableArray new];
+    _photoMessageMap = [NSMutableDictionary new];
     
     /**
      *  Set up message accessory button delegate and configuration
@@ -191,16 +195,47 @@
             // Get newsest message here
             NSDictionary *newestMessage = snapshot.value;
 //            NSLog(@"newest message is %@",newestMessage);
-            JSQMessage *message = [JSQMessage    messageWithSenderId:newestMessage[SenderId]
-                                                                displayName:newestMessage[SenderName]
-                                                                       text:newestMessage[TexMessage]];
-            [self.messages addObject:message];
-            [self.tempMessages addObject:newestMessage];
-            [self finishReceivingMessageAnimated:YES];
+            if (newestMessage[PhotoURL] == nil) {
+                JSQMessage *message = [JSQMessage    messageWithSenderId:newestMessage[SenderId]
+                                                             displayName:newestMessage[SenderName]
+                                                                    text:newestMessage[TexMessage]];
+                [self.messages addObject:message];
+                [self finishReceivingMessageAnimated:YES];
+            }else{
+                BOOL maskAsOutgoing = [newestMessage[SenderId] isEqualToString:self.senderId];
+                JSQPhotoMediaItem *mediaItem =  [[JSQPhotoMediaItem alloc]  initWithMaskAsOutgoing:maskAsOutgoing];
+                [self addPhotoMessageWithSenderId:newestMessage[SenderId] andKey:newestMessage[MessageId] andMediaItem:mediaItem];
+                
+                if (![newestMessage[PhotoURL] isEqualToString:imageURLNotSetKey]) {
+                    [self fetchImageDataAtUrl:newestMessage[PhotoURL] forMediaItem:mediaItem clearsPhotoMessageMapOnSuccessForKey:newestMessage[MessageId]];
+                }
+            }
             [self deleteMessagesWhenItLargerThanFive];
+            
         } withCancelBlock:^(NSError * _Nonnull error) {
             NSLog(@"%@", error.localizedDescription);
         }];
+        
+        
+        // We can also use the observer method to listen for
+        // changes to existing messages.
+        // We use this to be notified when a photo has been stored
+        // to the Firebase Storage, so we can update the message data
+        [[[[_ref child:Channel] child:channelId] child:MessageCollection] observeEventType:FIRDataEventTypeChildChanged withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
+            // Get newsest message here
+            NSDictionary *newestMessage = snapshot.value;
+            //            NSLog(@"newest message is %@",newestMessage);
+            if (newestMessage[PhotoURL]) {
+                JSQPhotoMediaItem *mediaItem = self.photoMessageMap[newestMessage[MessageId]];
+                [self fetchImageDataAtUrl:newestMessage[PhotoURL] forMediaItem:mediaItem clearsPhotoMessageMapOnSuccessForKey:newestMessage[MessageId]];
+                
+            }
+            
+        } withCancelBlock:^(NSError * _Nonnull error) {
+            NSLog(@"%@", error.localizedDescription);
+        }];
+        
+        
         [self observeUserTypingToShowReceiver];
     }else{
         NSLog(@"don't get channel id from myself because we can't get it");
@@ -256,6 +291,87 @@
     [self sendUserTypingStatusToFirebase:isTyping];
 }
 
+// TODO: SEND PHOTO MESSAGE
+// Idiea for send photo message is we send photo message with FAKE URL and update the message once the photo has been saved.
+-(NSString *) sendPhotoMessage{
+    NSDictionary *messageItem = @{
+                                  SenderId:[FIRAuth auth].currentUser.uid,
+                                  SenderName:[ObserveMyself shareInstance].info[UserName],
+                                  PhotoURL:imageURLNotSetKey,
+                                  MessageId:[[NSUUID UUID] UUIDString]
+                                  };
+    
+    [self sendMessageToChannles:messageItem];
+    [JSQSystemSoundPlayer jsq_playMessageSentSound];
+    
+    [self finishSendingMessageAnimated:YES];
+    
+    return messageItem[MessageId];
+}
+
+-(void) updateRealImageUrl:(NSString*) urlStr forPhotoMessageWithKey:(NSString*) key {
+    
+    [[[[[_ref child:Channel] child:channelId] child:MessageCollection] child:key]
+     updateChildValues:@{PhotoURL:urlStr} withCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+         if (error) {
+             NSLog(@"error with adding document %@",error);
+         }else{
+             NSLog(@"update url string for photo message");
+         }
+     }];
+}
+
+-(void) addPhotoMessageWithSenderId:(NSString *) senderId andKey:(NSString*) key andMediaItem:(JSQPhotoMediaItem *) mediaItem{
+    JSQMessage *message = [JSQMessage messageWithSenderId:senderId displayName:@"" media:mediaItem];
+    [self.messages addObject:message];
+    
+    if (mediaItem.image == nil) {
+        [self.photoMessageMap setObject:mediaItem forKey:key];
+    }
+    
+    [self.collectionView reloadData];
+    
+}
+
+-(void) fetchImageDataAtUrl:(NSString *) photoUrl forMediaItem:(JSQPhotoMediaItem *) mediaItem clearsPhotoMessageMapOnSuccessForKey:(NSString*) key{
+    
+    SDWebImageManager *manager = [SDWebImageManager sharedManager];
+    [manager loadImageWithURL:[NSURL URLWithString:photoUrl] options:SDWebImageHighPriority progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
+        
+    } completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, SDImageCacheType cacheType, BOOL finished, NSURL * _Nullable imageURL)
+    {
+            mediaItem.image = image;
+            [self.collectionView reloadData];
+            [self.photoMessageMap removeObjectForKey:key];
+    }];
+    
+    
+    
+//    FIRStorage *storage = [FIRStorage storage];
+//    FIRStorageReference *storageRef = [storage reference];
+//    NSString *imagePath = photoUrl;
+//    FIRStorageReference *userImage = [storageRef child:imagePath];
+//
+//    // Download in memory with a maximum allowed size of 1MB (1 * 1024 * 1024 bytes)
+//    [userImage dataWithMaxSize:1 * 1024 * 1024 completion:^(NSData *data, NSError *error){
+//        if (error != nil) {
+//            // Uh-oh, an error occurred!
+//            NSLog(@"error when download image");
+//        } else {
+//            // Data for "images/island.jpg" is returned
+//            NSLog(@"success get image from firebase");
+//            UIImage *image = [UIImage imageWithData:data];
+//            mediaItem.image = image;
+//
+//            [self.collectionView reloadData];
+//
+//            [self.photoMessageMap removeObjectForKey:key];
+//        }
+//    }];
+}
+
+
+
 // TODO: Send message to channel firebase
 -(void) sendMessageToChannles:(NSDictionary *) messageItem
 {
@@ -268,7 +384,7 @@
                  NSLog(@"send message to channel success");
                  if (!observeConversationDone) {
                      observeConversationDone = YES;
-                     [self observeConversationIfFirstTimeNotWork];
+                     [self startObserveConversation];
                  }
              }
          }];
@@ -282,7 +398,7 @@
                  NSLog(@"send message to channel success");
                  if (!observeConversationDone) {
                      observeConversationDone = YES;
-                     [self observeConversationIfFirstTimeNotWork];
+                     [self startObserveConversation];
                  }
              }
          }];
@@ -290,23 +406,6 @@
    
 }
 
--(void) observeConversationIfFirstTimeNotWork{
-    [[[[_ref child:Channel] child:channelId] child:MessageCollection] observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
-        // Get newsest message here
-        NSDictionary *newestMessage = snapshot.value;
-//        NSLog(@"newest message is %@",newestMessage);
-        JSQMessage *message = [JSQMessage    messageWithSenderId:newestMessage[SenderId]
-                                                     displayName:newestMessage[SenderName]
-                                                            text:newestMessage[TexMessage]];
-        [self.messages addObject:message];
-        [self.tempMessages addObject:newestMessage];
-        [self finishReceivingMessageAnimated:YES];
-        
-    } withCancelBlock:^(NSError * _Nonnull error) {
-        NSLog(@"%@", error.localizedDescription);
-    }];
-    [self observeUserTypingToShowReceiver];
-}
 
 -(void) writeChannelOnReceiver{
     if (!writeChanelOnReceiver) {
@@ -408,6 +507,7 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
     if (referenceUrl) {
         PHFetchResult* assets = [PHAsset fetchAssetsWithALAssetURLs:@[referenceUrl] options:nil];
         PHAsset *asset = assets.firstObject;
+        NSString* key =   [self sendPhotoMessage];
         [asset requestContentEditingInputWithOptions:nil
                                    completionHandler:^(PHContentEditingInput *contentEditingInput,
                                                        NSDictionary *info) {
@@ -426,13 +526,14 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
 //                                                _urlTextView.text = @"Upload Failed";
                                                 return;
                                             }
-                                            [self uploadSuccess:metadata storagePath:filePath];
+                                            [self updateRealImageUrl:[metadata.downloadURL absoluteString] forPhotoMessageWithKey:key];
                                         }];
                                        // [END uploadimage]
                                    }];
         
     } else {
         UIImage *image = info[UIImagePickerControllerOriginalImage];
+        NSString * key =  [self sendPhotoMessage];
         NSData *imageData = UIImageJPEGRepresentation(image, 0.8);
         NSString *imagePath =
         [NSString stringWithFormat:@"%@/%lld.jpg",
@@ -447,17 +548,10 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
 //                                            _urlTextView.text = @"Upload Failed";
                                             return;
                                         }
-                                        [self uploadSuccess:metadata storagePath:imagePath];
+                                        [self updateRealImageUrl:[metadata.downloadURL absoluteString] forPhotoMessageWithKey:key];
+
                                     }];
     }
-}
-
-- (void)uploadSuccess:(FIRStorageMetadata *) metadata storagePath: (NSString *) storagePath {
-    NSLog(@"Upload Succeeded! %@",metadata.downloadURL);
-//    _urlTextView.text = metadata.downloadURL.absoluteString;
-    [[NSUserDefaults standardUserDefaults] setObject:storagePath forKey:@"storagePath"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-//    _downloadPicButton.enabled = YES;
 }
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {

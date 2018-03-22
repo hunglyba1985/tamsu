@@ -8,6 +8,7 @@
 
 #import "ChatViewController.h"
 #import "JSQMessagesAvatarImageFactory.h"
+
 @import Photos;
 
 NSString *const imageURLNotSetKey = @"NOTSET";
@@ -91,7 +92,7 @@ NSString *const imageURLNotSetKey = @"NOTSET";
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 
 }
-
+#pragma mark Set Avatar For Chater
 -(void) setAvartaForChater{
     
     UIImage* circuleSenderImage = [JSQMessagesAvatarImageFactory  circularAvatarImage:[UIImage imageNamed:@"menIcon"] withDiameter:kJSQMessagesCollectionViewAvatarSizeDefault];
@@ -294,6 +295,9 @@ NSString *const imageURLNotSetKey = @"NOTSET";
 // TODO: SEND PHOTO MESSAGE
 // Idiea for send photo message is we send photo message with FAKE URL and update the message once the photo has been saved.
 -(NSString *) sendPhotoMessage{
+    [self writeChannelOnReceiver];
+    [self checkReceiverActiveOrNotToSendNotification];
+    
     NSDictionary *messageItem = @{
                                   SenderId:[FIRAuth auth].currentUser.uid,
                                   SenderName:[ObserveMyself shareInstance].info[UserName],
@@ -482,7 +486,47 @@ NSString *const imageURLNotSetKey = @"NOTSET";
 {
     [self.inputToolbar.contentView.textView resignFirstResponder];
     NSLog(@"did press accessory button");
-    [self openCameraOrLibraryToGetImage];
+    [self openSelectionChoiceCameraOrLibrary];
+}
+
+-(void) openSelectionChoiceCameraOrLibrary{
+    UIImagePickerController * picker = [[UIImagePickerController alloc] init];
+    picker.delegate = self;
+    
+    UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:@"" message:@"" preferredStyle:UIAlertControllerStyleActionSheet];
+    
+    [actionSheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+        
+        // Cancel button tappped.
+        [self dismissViewControllerAnimated:YES completion:^{
+        }];
+    }]];
+    
+    [actionSheet addAction:[UIAlertAction actionWithTitle:@"Camera" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        [self dismissViewControllerAnimated:YES completion:^{
+        }];
+        
+        if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+            picker.sourceType = UIImagePickerControllerSourceTypeCamera;
+            [self presentViewController:picker animated:YES completion:NULL];
+        }
+        else{
+            NSLog(@"can open camera");
+        }
+    }]];
+    
+    [actionSheet addAction:[UIAlertAction actionWithTitle:@"Library" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        // OK button tapped.
+        [self dismissViewControllerAnimated:YES completion:^{
+        }];
+        
+        NSLog(@"select library ");
+        picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+        [self presentViewController:picker animated:YES completion:NULL];
+    }]];
+    
+    // Present action sheet.
+    [self presentViewController:actionSheet animated:YES completion:nil];
 }
 
 -(void) openCameraOrLibraryToGetImage{
@@ -494,7 +538,6 @@ NSString *const imageURLNotSetKey = @"NOTSET";
         picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
     }
     
-    [self presentViewController:picker animated:YES completion:NULL];
 }
 
 - (void)imagePickerController:(UIImagePickerController *)picker
@@ -505,33 +548,36 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
     NSURL *referenceUrl = info[UIImagePickerControllerReferenceURL];
     // if it's a photo from the library, not an image from the camera
     if (referenceUrl) {
+        NSLog(@"get image from library -------");
         PHFetchResult* assets = [PHAsset fetchAssetsWithALAssetURLs:@[referenceUrl] options:nil];
         PHAsset *asset = assets.firstObject;
-        NSString* key =   [self sendPhotoMessage];
         [asset requestContentEditingInputWithOptions:nil
                                    completionHandler:^(PHContentEditingInput *contentEditingInput,
                                                        NSDictionary *info) {
-                                       NSURL *imageFile = contentEditingInput.fullSizeImageURL;
-                                       NSString *filePath =
-                                       [NSString stringWithFormat:@"%@/%lld/%@",
+                                       NSLog(@"ge image from library --------");
+                                       UIImage *image = contentEditingInput.displaySizeImage;
+                                       NSString * key =  [self sendPhotoMessage];
+                                       NSData *imageData = UIImageJPEGRepresentation(image, 0.8);
+                                       NSString *imagePath =
+                                       [NSString stringWithFormat:@"%@/%lld.jpg",
                                         [FIRAuth auth].currentUser.uid,
-                                        (long long)([NSDate date].timeIntervalSince1970 * 1000.0),
-                                        imageFile.lastPathComponent];
-                                       // [START uploadimage]
-                                       [[_storageRef child:filePath]
-                                        putFile:imageFile metadata:nil
-                                        completion:^(FIRStorageMetadata *metadata, NSError *error) {
-                                            if (error) {
-                                                NSLog(@"Error uploading: %@", error);
-//                                                _urlTextView.text = @"Upload Failed";
-                                                return;
-                                            }
-                                            [self updateRealImageUrl:[metadata.downloadURL absoluteString] forPhotoMessageWithKey:key];
-                                        }];
-                                       // [END uploadimage]
+                                        (long long)([NSDate date].timeIntervalSince1970 * 1000.0)];
+                                       FIRStorageMetadata *metadata = [FIRStorageMetadata new];
+                                       metadata.contentType = @"image/jpeg";
+                                       [[_storageRef child:imagePath] putData:imageData metadata:metadata
+                                                                   completion:^(FIRStorageMetadata * _Nullable metadata, NSError * _Nullable error) {
+                                                                       if (error) {
+                                                                           NSLog(@"Error uploading: %@", error);
+                                                                           //                                            _urlTextView.text = @"Upload Failed";
+                                                                           return;
+                                                                       }
+                                                                       [self updateRealImageUrl:[metadata.downloadURL absoluteString] forPhotoMessageWithKey:key];
+                                                                       
+                                                                   }];
                                    }];
         
     } else {
+        NSLog(@"ge image from camera --------");
         UIImage *image = info[UIImagePickerControllerOriginalImage];
         NSString * key =  [self sendPhotoMessage];
         NSData *imageData = UIImageJPEGRepresentation(image, 0.8);
@@ -563,7 +609,7 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
 -(void) textViewDidChange:(UITextView *)textView{
     [super textViewDidChange:textView];
     
-    NSLog(@"if text view did change %@",textView.text);
+//    NSLog(@"if text view did change %@",textView.text);
     isTyping = ![textView.text isEqualToString:@""];
     [self sendUserTypingStatusToFirebase:isTyping];
 }
@@ -652,7 +698,8 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
      */
     
     JSQMessage *message = [self.messages objectAtIndex:indexPath.item];
-    
+//    NSLog(@"message sender name is -------------- %@",message.senderDisplayName);
+//    NSLog(@"message sender id is ---------------%@",message.senderId);
     return [chaterIcon objectForKey:message.senderId];                 // [self.demoData.avatars objectForKey:message.senderId];
 }
 
@@ -844,6 +891,35 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
     return 0.0f;
 }
 
+
+#pragma mark - Responding to collection view tap events
+
+- (void)collectionView:(JSQMessagesCollectionView *)collectionView
+                header:(JSQMessagesLoadEarlierHeaderView *)headerView didTapLoadEarlierMessagesButton:(UIButton *)sender
+{
+    NSLog(@"Load earlier messages!");
+}
+
+- (void)collectionView:(JSQMessagesCollectionView *)collectionView didTapAvatarImageView:(UIImageView *)avatarImageView atIndexPath:(NSIndexPath *)indexPath
+{
+    NSLog(@"Tapped avatar!");
+}
+
+- (void)collectionView:(JSQMessagesCollectionView *)collectionView didTapMessageBubbleAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSLog(@"Tapped message bubble!");
+    JSQMessage *message = [self.messages objectAtIndex:indexPath.item];
+    if ([message isMediaMessage]) {
+        JSQPhotoMediaItem *messageImage = (JSQPhotoMediaItem *) message.media;
+        
+    }
+    
+}
+
+- (void)collectionView:(JSQMessagesCollectionView *)collectionView didTapCellAtIndexPath:(NSIndexPath *)indexPath touchLocation:(CGPoint)touchLocation
+{
+    NSLog(@"Tapped cell at %@!", NSStringFromCGPoint(touchLocation));
+}
 
 
 - (void)didReceiveMemoryWarning {

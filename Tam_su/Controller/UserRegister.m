@@ -177,6 +177,7 @@ NSString *const kRegisterEmail = @"register email";
                                      NSLog(@"register with email error");
                                  }else{
                                      NSLog(@"register success with user %@",user);
+                                     [[ObserveMyself shareInstance] startObserve];
                                      [self updateUserData:user];
                                      [self goToMainView];
                                  }

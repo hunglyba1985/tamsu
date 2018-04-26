@@ -37,6 +37,7 @@
 #define TexMessage @"texMessage"
 #define MessageId @"messageId"
 #define TypingIndicate @"typingIndicator"
+#define PhotoURL @"photoURL"
 
 
 

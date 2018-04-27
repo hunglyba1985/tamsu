@@ -8,6 +8,7 @@
 
 #import "ChatViewController.h"
 #import "JSQMessagesAvatarImageFactory.h"
+#import "PhotoViewController.h"
 
 @import Photos;
 
@@ -905,16 +906,52 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
     NSLog(@"Tapped avatar!");
 }
 
+// TODO: DETECH CLICK ON IMAGE
 - (void)collectionView:(JSQMessagesCollectionView *)collectionView didTapMessageBubbleAtIndexPath:(NSIndexPath *)indexPath
 {
     NSLog(@"Tapped message bubble!");
     JSQMessage *message = [self.messages objectAtIndex:indexPath.item];
     if ([message isMediaMessage]) {
         JSQPhotoMediaItem *messageImage = (JSQPhotoMediaItem *) message.media;
-        
+//        NSLog(@"image we get is %@",messageImage.image);
+//        UIImageView *imageView = [[UIImageView alloc] initWithImage:messageImage.image];
+//        [self.view addSubview:imageView];
+        [self showImageOfMessage:messageImage.image];
     }
-    
 }
+
+-(void) showImageOfMessage:(UIImage *) image
+{
+    PhotoViewController *photoView = [[PhotoViewController alloc] initWithNibName:@"PhotoViewController" bundle:nil];
+    photoView.image = image;
+    
+    [photoView setPopinAlignment:BKTPopinAlignementOptionCentered];
+    [photoView setPopinTransitionStyle:BKTPopinTransitionStyleSpringyZoom];
+    
+    
+    //Create a blur parameters object to configure background blur
+    BKTBlurParameters *blurParameters = [BKTBlurParameters new];
+    blurParameters.alpha = 1.0f;
+    blurParameters.radius = 8.0f;
+    blurParameters.saturationDeltaFactor = 1.8f;
+    blurParameters.tintColor = [UIColor colorWithRed:0.966 green:0.851 blue:0.038 alpha:0.2];
+//    [photoView setBlurParameters:blurParameters];
+    
+    //Add option for a blurry background
+//    [photoView setPopinOptions:[photoView popinOptions]|BKTPopinBlurryDimmingView];
+    
+    [photoView setPreferedPopinContentSize:CGSizeMake(300.0, 300.0)];
+//    [photoView setPopinTransitionDirection:BKTPopinTransitionDirectionTop];
+
+    [photoView setPopinOptions:BKTPopinDefault];
+
+    
+    [self.navigationController presentPopinController:photoView animated:YES completion:^{
+        NSLog(@"popin present !");
+    }];
+}
+
+
 
 - (void)collectionView:(JSQMessagesCollectionView *)collectionView didTapCellAtIndexPath:(NSIndexPath *)indexPath touchLocation:(CGPoint)touchLocation
 {

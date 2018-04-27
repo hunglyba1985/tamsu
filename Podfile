@@ -16,7 +16,7 @@ target 'Tam_su' do
   pod 'XLForm'
   pod 'JDStatusBarNotification'
   pod 'SDWebImage', '~> 4.0'
-
+  pod 'MaryPopin'
   
   target 'Tam_suTests' do
     inherit! :search_paths

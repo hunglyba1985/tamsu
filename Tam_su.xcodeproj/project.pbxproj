@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		04150AA12063B8C5006169E6 /* PhotoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 04150A9F2063B8C5006169E6 /* PhotoViewController.m */; };
+		04150AA22063B8C5006169E6 /* PhotoViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 04150AA02063B8C5006169E6 /* PhotoViewController.xib */; };
 		04606E3A20567BDC00497B3B /* ChatViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 04606E3920567BDC00497B3B /* ChatViewController.m */; };
 		04606E3F2058D89900497B3B /* ObserveMyself.m in Sources */ = {isa = PBXBuildFile; fileRef = 04606E3E2058D89900497B3B /* ObserveMyself.m */; };
 		047EA66C205FAC3200A052D5 /* Utility.m in Sources */ = {isa = PBXBuildFile; fileRef = 047EA66B205FAC3200A052D5 /* Utility.m */; };
@@ -47,6 +49,9 @@
 
 /* Begin PBXFileReference section */
 		01DCB2A1FB4E837D6BC84E78 /* Pods-Tam_su.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Tam_su.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Tam_su/Pods-Tam_su.debug.xcconfig"; sourceTree = "<group>"; };
+		04150A9E2063B8C5006169E6 /* PhotoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PhotoViewController.h; sourceTree = "<group>"; };
+		04150A9F2063B8C5006169E6 /* PhotoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PhotoViewController.m; sourceTree = "<group>"; };
+		04150AA02063B8C5006169E6 /* PhotoViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PhotoViewController.xib; sourceTree = "<group>"; };
 		04606E3820567BDC00497B3B /* ChatViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChatViewController.h; sourceTree = "<group>"; };
 		04606E3920567BDC00497B3B /* ChatViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ChatViewController.m; sourceTree = "<group>"; };
 		04606E3D2058D89900497B3B /* ObserveMyself.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObserveMyself.h; sourceTree = "<group>"; };
@@ -220,6 +225,9 @@
 				04606E3E2058D89900497B3B /* ObserveMyself.m */,
 				047EA66A205FAC3200A052D5 /* Utility.h */,
 				047EA66B205FAC3200A052D5 /* Utility.m */,
+				04150A9E2063B8C5006169E6 /* PhotoViewController.h */,
+				04150A9F2063B8C5006169E6 /* PhotoViewController.m */,
+				04150AA02063B8C5006169E6 /* PhotoViewController.xib */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -348,6 +356,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				04898000204FA71D00EC4A9B /* LaunchScreen.storyboard in Resources */,
+				04150AA22063B8C5006169E6 /* PhotoViewController.xib in Resources */,
 				04898029204FADAC00EC4A9B /* GoogleService-Info.plist in Resources */,
 				04897FFD204FA71D00EC4A9B /* Assets.xcassets in Resources */,
 				04897FFB204FA71D00EC4A9B /* Main.storyboard in Resources */,
@@ -446,6 +455,7 @@
 				"${BUILT_PRODUCTS_DIR}/JDStatusBarNotification/JDStatusBarNotification.framework",
 				"${BUILT_PRODUCTS_DIR}/JSQMessagesViewController/JSQMessagesViewController.framework",
 				"${BUILT_PRODUCTS_DIR}/JSQSystemSoundPlayer/JSQSystemSoundPlayer.framework",
+				"${BUILT_PRODUCTS_DIR}/MaryPopin/MaryPopin.framework",
 				"${BUILT_PRODUCTS_DIR}/Protobuf/Protobuf.framework",
 				"${BUILT_PRODUCTS_DIR}/SDWebImage/SDWebImage.framework",
 				"${BUILT_PRODUCTS_DIR}/XLForm/XLForm.framework",
@@ -459,6 +469,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/JDStatusBarNotification.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/JSQMessagesViewController.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/JSQSystemSoundPlayer.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MaryPopin.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Protobuf.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDWebImage.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/XLForm.framework",
@@ -552,6 +563,7 @@
 				04898036204FD68A00EC4A9B /* MainViewController.m in Sources */,
 				04897FF5204FA71D00EC4A9B /* AppDelegate.m in Sources */,
 				04606E3A20567BDC00497B3B /* ChatViewController.m in Sources */,
+				04150AA12063B8C5006169E6 /* PhotoViewController.m in Sources */,
 				04898039204FE4C500EC4A9B /* SettingViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

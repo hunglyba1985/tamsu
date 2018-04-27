@@ -414,10 +414,8 @@ NSString *const imageURLNotSetKey = @"NOTSET";
 
 -(void) writeChannelOnReceiver{
     if (!writeChanelOnReceiver) {
-        NSLog(@"write channel of receiver ------------------------------------");
         writeChanelOnReceiver = YES;
         NSArray *channels = self.receiver[UserChannel];
-        NSLog(@"receiver have channels ----------------- %@",channels);
         BOOL receiverHaveChannel = NO;
         for (NSString *channelId in channels) {
             if ([channelId containsString:[FIRAuth auth].currentUser.uid]) {
@@ -425,7 +423,6 @@ NSString *const imageURLNotSetKey = @"NOTSET";
             }
         }
         if (!receiverHaveChannel) {
-            NSLog(@"receiver don't have this channel -----------");
             // TODO: Continue check if myself have channelid and get it to add to receiver
             // if myself don't have channelId create one to add
 
@@ -439,8 +436,6 @@ NSString *const imageURLNotSetKey = @"NOTSET";
             if (!combineId) {
                 combineId = [NSString stringWithFormat:@"%@+%@",[FIRAuth auth].currentUser.uid,self.receiver[UserId]];
             }
-            
-            NSLog(@"finally channel id will be like this --------- %@",combineId);
             
             NSMutableArray *receiverOldChannels = [[NSMutableArray alloc] initWithArray:self.receiver[UserChannel]];
             [receiverOldChannels addObject:combineId];
@@ -463,7 +458,6 @@ NSString *const imageURLNotSetKey = @"NOTSET";
 // TODO: Check receiver is active or not to SEND NOTIFICATION
 -(void) checkReceiverActiveOrNotToSendNotification{
     if (!receiverStatus) {
-        NSLog(@"receiver inactive ------");
         NSDictionary *notification = @{ReceiverId:self.receiver[UserId],
                                        SenderId:[FIRAuth auth].currentUser.uid,
                                        SenderName:[ObserveMyself shareInstance].info[UserName]
